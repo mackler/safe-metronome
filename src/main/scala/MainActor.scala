@@ -12,6 +12,8 @@ class MainActor extends Actor {
   var audioTrackOption: Option[AudioTrack] = None
   val audioData = new Array[Byte](FILE_SIZE)
 
+  private def track = audioTrackOption.get
+
   var tempo = 0
 
   override def preStart {
@@ -24,7 +26,6 @@ class MainActor extends Actor {
 		     FILE_SIZE,
 		     AudioTrack.MODE_STATIC)
     )
-    val track = audioTrackOption.get
     logD(s"after constructing track, State is ${stateString(track.getState)}, playstate is ${playStateString(track.getPlayState)}")
   }
 
@@ -33,20 +34,15 @@ class MainActor extends Actor {
 
   def receive = {
     case Start(androidContext) ⇒
-      val track = audioTrackOption.get
-      logD(s"received start, State is ${stateString(track.getState)}, playstate is ${playStateString(track.getPlayState)}")
       val reload = track.reloadStaticData
-      logD(s"reoadStaticData() returned $reload")
-      logD(s"after reloadStaticData(), State is ${stateString(track.getState)}, playstate is ${playStateString(track.getPlayState)}")
       val loopPoint = (44100 * 60) / tempo
       logD(s"Starting, tempo ${(44100 * 60) / loopPoint} BPM")
       track.setPlaybackHeadPosition(0)
-      audioTrackOption.get.setLoopPoints(0, loopPoint, -1)
+      track.setLoopPoints(0, loopPoint, -1)
+      track.setNotificationMarkerPosition(0)
       audioTrackOption.get.play()
-      logD(s"after play(), State is ${stateString(track.getState)}, playstate is ${playStateString(track.getPlayState)}")
 
     case SetUi(activity) ⇒
-      val track = audioTrackOption.get
       logD(s"Activity ready to attach: State is ${stateString(track.getState)}, playstate is ${playStateString(track.getPlayState)}")
       uiOption = Option(activity)
       val resources: android.content.res.Resources = uiOption.get.getResources
@@ -57,22 +53,36 @@ class MainActor extends Actor {
       logD(s"after track.write() State is ${stateString(track.getState)}, playstate is ${playStateString(track.getPlayState)}")
 
     case SetTempo(bpm) ⇒
-      val track = audioTrackOption.get
       tempo = bpm
       val loopPoint = ((44100 * 60) / tempo) - 1
       logD(s"Changing tempo to $tempo BPM")
-      track.setLoopPoints(0, loopPoint, -1)
-      track.play()
+      track.setPlaybackPositionUpdateListener(tempoChangeListener)
+      track.setNotificationMarkerPosition(1)
+      logD(s"notification marker set to ${track.getNotificationMarkerPosition}")
       uiOption.get.runOnUiThread(new Runnable { def run {
 	uiOption.get.displayTempo(tempo)
       }})
 
     case Stop ⇒
       logD("Main Actor received Stop message")
-      val track = audioTrackOption.get
       logD(s"before stop() State is ${stateString(track.getState)}, playstate is ${playStateString(track.getPlayState)}")
       audioTrackOption.get.stop()
       logD(s"after stop() State is ${stateString(track.getState)}, playstate is ${playStateString(track.getPlayState)}")
+  }
+
+  private val tempoChangeListener = new android.media.AudioTrack.OnPlaybackPositionUpdateListener {
+    def onMarkerReached(t: AudioTrack) {
+      logD("tempo change listener called on marker")
+      t.stop
+      t.reloadStaticData
+      t.setPlaybackHeadPosition(0)
+      val loopPoint = (44100 * 60) / tempo
+      t.setLoopPoints(0, loopPoint, -1)
+      t.play()
+    }
+    def onPeriodicNotification(t: AudioTrack) {
+      logD("tempo change listener called on period")
+    }
   }
 
   private def stateString(state: Int): String = {
