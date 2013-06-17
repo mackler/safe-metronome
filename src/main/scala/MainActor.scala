@@ -5,12 +5,21 @@ import scala.concurrent.duration._
 import android.media.AudioTrack
 import android.media.AudioTrack._
 
+// marker at 43801 does not work 43800 works
+
 class MainActor extends Actor {
-  final val FILE_SIZE = 330752
+  // sound is raw PCM with sample rate 44100, depth 16 bits, mono, single beat @ 32 BPM
+  // ie, 82688 samples per beat (rounded up from 82687.5), file size in 8-bit bytes
+  final val FILE_SIZE = 165376
+    // 10335, 5167, 4983: bad buffer sizes
+    // 9600 works
+  val bufferSizeinBytes = 19200
+  var mIsPlaying: Boolean = false
+  case object PlayLoop
 
   var uiOption: Option[MainActivity] = None
   var audioTrackOption: Option[AudioTrack] = None
-  val audioData = new Array[Byte](FILE_SIZE)
+  val audioData = new Array[Short](FILE_SIZE/2)
 
   private def track = audioTrackOption.get
 
@@ -18,88 +27,76 @@ class MainActor extends Actor {
 
   override def preStart {
     tempo = 60
+    val minBufferSize = AudioTrack.getMinBufferSize(44100,android.media.AudioFormat.CHANNEL_OUT_MONO,
+					      android.media.AudioFormat.ENCODING_PCM_16BIT)
     audioTrackOption = Option(
       new AudioTrack(3,
 		     44100,
 		     android.media.AudioFormat.CHANNEL_OUT_MONO,
 		     android.media.AudioFormat.ENCODING_PCM_16BIT,
-		     FILE_SIZE,
-		     AudioTrack.MODE_STATIC)
+		     bufferSizeinBytes,
+		     AudioTrack.MODE_STREAM)
     )
-    logD(s"after constructing track, State is ${stateString(track.getState)}, playstate is ${playStateString(track.getPlayState)}")
   }
 
   override def postStop {
   }
 
+  val endListener = new OnPlaybackPositionUpdateListener {
+    def onMarkerReached(track: AudioTrack) {
+      logD("end marker reached")
+//      self ! PlayLoop
+    }
+    def onPeriodicNotification(track: AudioTrack) {}
+  }
+
   def receive = {
+
     case Start(androidContext) ⇒
-      val reload = track.reloadStaticData
-      val loopPoint = (44100 * 60) / tempo
-      logD(s"Starting, tempo ${(44100 * 60) / loopPoint} BPM")
-      track.setPlaybackHeadPosition(0)
-      track.setLoopPoints(0, loopPoint, -1)
-      track.setNotificationMarkerPosition(0)
-      audioTrackOption.get.play()
+      logD(s"Starting, tempo ${tempo} BPM")
+      mIsPlaying = true
+      self ! PlayLoop
+
+    case PlayLoop ⇒
+      val samplesPerBeat = 2646000 / tempo
+      if (mIsPlaying) {
+	track.write(audioData, 0, samplesPerBeat)
+	track.setNotificationMarkerPosition (samplesPerBeat-1)
+	track.setPlaybackPositionUpdateListener(endListener)
+	if (track.getPlayState != PLAYSTATE_PLAYING) track.play()
+	self ! PlayLoop
+      }
 
     case SetUi(activity) ⇒
-      logD(s"Activity ready to attach: State is ${stateString(track.getState)}, playstate is ${playStateString(track.getPlayState)}")
       uiOption = Option(activity)
       val resources: android.content.res.Resources = uiOption.get.getResources
-      val inputStream = resources.openRawResource(R.raw.clock)
-      inputStream.read(audioData, 0, FILE_SIZE)
-      inputStream.close()
-      audioTrackOption.get.write(audioData, 0, audioData.size)
-      logD(s"after track.write() State is ${stateString(track.getState)}, playstate is ${playStateString(track.getPlayState)}")
+      val inputStream = resources.openRawResource(R.raw.cowbell)
+      val dataInputStream = new java.io.DataInputStream(inputStream)
+      (0 to ((FILE_SIZE/2)-1)) foreach {
+	audioData.update(_, dataInputStream.readShort())
+      }
+      dataInputStream.close()
 
     case SetTempo(bpm) ⇒
+      logD(s"Changing tempo to $bpm BPM")
       tempo = bpm
-      val loopPoint = ((44100 * 60) / tempo) - 1
-      logD(s"Changing tempo to $tempo BPM")
-      track.setPlaybackPositionUpdateListener(tempoChangeListener)
-      track.setNotificationMarkerPosition(1)
-      logD(s"notification marker set to ${track.getNotificationMarkerPosition}")
       uiOption.get.runOnUiThread(new Runnable { def run {
 	uiOption.get.displayTempo(tempo)
       }})
 
     case Stop ⇒
       logD("Main Actor received Stop message")
-      logD(s"before stop() State is ${stateString(track.getState)}, playstate is ${playStateString(track.getPlayState)}")
-      audioTrackOption.get.stop()
-      logD(s"after stop() State is ${stateString(track.getState)}, playstate is ${playStateString(track.getPlayState)}")
-  }
-
-  private val tempoChangeListener = new android.media.AudioTrack.OnPlaybackPositionUpdateListener {
-    def onMarkerReached(t: AudioTrack) {
-      logD("tempo change listener called on marker")
-      t.stop
-      t.reloadStaticData
-      t.setPlaybackHeadPosition(0)
-      val loopPoint = (44100 * 60) / tempo
-      t.setLoopPoints(0, loopPoint, -1)
-      t.play()
-    }
-    def onPeriodicNotification(t: AudioTrack) {
-      logD("tempo change listener called on period")
-    }
-  }
-
-  private def stateString(state: Int): String = {
-    state match {
-      case STATE_INITIALIZED => "initialized"
-      case STATE_NO_STATIC_DATA => "no static data"
-      case STATE_UNINITIALIZED => "uninitialized"
-      case _ => "unknown"
-    }
+      mIsPlaying = false
+      logD(s"Audiotrack player state is ${playStateString(track.getPlayState)}")
   }
 
   private def playStateString(state: Int): String = {
     state match {
       case PLAYSTATE_STOPPED => "stopped"
-      case PLAYSTATE_PAUSED => "paused"
+      case PLAYSTATE_PAUSED  => "paused"
       case PLAYSTATE_PLAYING => "playing"
       case _ => "unknown"
     }
   }
+
 }
