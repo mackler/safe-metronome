@@ -27,10 +27,9 @@ class MainActor extends Actor {
 
   private def track = audioTrackOption.get
 
-  var tempo = 0
+  var mTempo = 0
 
   override def preStart {
-    tempo = 60
     val minBufferSize = AudioTrack.getMinBufferSize(44100,android.media.AudioFormat.CHANNEL_OUT_MONO,
 					      android.media.AudioFormat.ENCODING_PCM_16BIT)
     audioTrackOption = Option(
@@ -56,8 +55,18 @@ class MainActor extends Actor {
 
   def receive = {
 
+    case SavePreferences(preferences) ⇒
+      val editor = preferences.edit
+      editor.putInt("tempo", mTempo)
+      editor.putString("sound", audioData match {
+	case `claveAudio` ⇒ "clave"
+	case `cowbellAudio` ⇒ "cowbell"
+      })
+      editor.apply() // is asynchronous
+
+
     case Start ⇒
-      logD(s"Starting, tempo ${tempo} BPM")
+      logD(s"Starting, tempo ${mTempo} BPM")
       mIsPlaying = true
       self ! PlayLoop
       uiOption.get.runOnUiThread(new Runnable { def run {
@@ -65,7 +74,7 @@ class MainActor extends Actor {
       }})
 
     case PlayLoop ⇒
-      val samplesPerBeat = 2646000 / tempo
+      val samplesPerBeat = 2646000 / mTempo
       if (mIsPlaying) {
 	track.write(audioData, 0, samplesPerBeat)
 	track.setNotificationMarkerPosition (samplesPerBeat-1)
@@ -76,14 +85,22 @@ class MainActor extends Actor {
 
     case SetUi(activity) ⇒
       uiOption = Option(activity)
-      val resources: android.content.res.Resources = uiOption.get.getResources
+      if (mTempo == 0) {
+        val resources: android.content.res.Resources = uiOption.get.getResources
 
-      readSound(resources, R.raw.clave, claveAudio)
-      readSound(resources, R.raw.cowbell, cowbellAudio)
+        readSound(resources, R.raw.clave, claveAudio)
+        readSound(resources, R.raw.cowbell, cowbellAudio)
 
+	val preferences = uiOption.get.getPreferences(MODE_PRIVATE)
+	mTempo = preferences.getInt("tempo", 120)
+        audioData = preferences.getString("sound","clave") match {
+	  case "clave" ⇒ claveAudio
+	  case "cowbell" ⇒ cowbellAudio
+	}
+      }
       uiOption.get.runOnUiThread(new Runnable { def run {
-	uiOption.get.displayTempo(tempo)
-        updateSeek(tempo)
+        uiOption.get.displayTempo(mTempo)
+        updateSeek(mTempo)
       }})
 
     case SetSound(sound: Int) ⇒ sound match {
@@ -93,9 +110,9 @@ class MainActor extends Actor {
 
     case SetTempo(bpm) ⇒
       logD(s"Changing tempo to $bpm BPM")
-      tempo = bpm
+      mTempo = bpm
       uiOption.get.runOnUiThread(new Runnable { def run {
-	uiOption.get.displayTempo(tempo)
+	uiOption.get.displayTempo(mTempo)
       }})
 
     case Stop ⇒
@@ -107,24 +124,24 @@ class MainActor extends Actor {
       logD(s"Audiotrack player state is ${playStateString(track.getPlayState)}")
 
     case Decrease ⇒
-      if (tempo > MIN_TEMPO) {
-	tempo -= 1
-        logD(s"Tempo decreased to $tempo BPM")
-	updateSeek(tempo)
+      if (mTempo > MIN_TEMPO) {
+	mTempo -= 1
+        logD(s"Tempo decreased to $mTempo BPM")
+	updateSeek(mTempo)
       }
 
     case Increase ⇒
-      if (tempo < MAX_TEMPO) {
-	tempo += 1
-        logD(s"Tempo increased to $tempo BPM")
-	updateSeek(tempo)
+      if (mTempo < MAX_TEMPO) {
+	mTempo += 1
+        logD(s"Tempo increased to $mTempo BPM")
+	updateSeek(mTempo)
       }
   }
 
   private def updateSeek(bpm: Int) {
     uiOption.get.runOnUiThread(new Runnable { def run {
-      uiOption.get.displayTempo(tempo)
-      uiOption.get.setSeek(tempo-32)
+      uiOption.get.displayTempo(mTempo)
+      uiOption.get.setSeek(mTempo-32)
     }})
   }
 

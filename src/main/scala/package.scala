@@ -6,9 +6,6 @@ package org.mackler {
     val  ActorSystem = akka.actor.ActorSystem
     type Cancellable = akka.actor.Cancellable
     val  Props       = akka.actor.Props
-    type MediaPlayer = android.media.MediaPlayer
-    def MediaPlayerCreate(context: android.content.Context, resid: Int) =
-      android.media.MediaPlayer.create(context, resid)
 
     type OnSeekBarChangeListener = android.widget.SeekBar.OnSeekBarChangeListener
     type SeekBar = android.widget.SeekBar
@@ -18,6 +15,7 @@ package org.mackler {
     type Dialog            = android.app.Dialog
     type DialogFragment    = android.app.DialogFragment
     type Resources         = android.content.res.Resources
+    val  MODE_PRIVATE      = android.content.Context.MODE_PRIVATE
     type Bundle            = android.os.Bundle
     def  logD(msg: String) = android.util.Log.d("SafeMetronome", msg)
     type View              = android.view.View
@@ -25,6 +23,7 @@ package org.mackler {
     type MenuItem          = android.view.MenuItem
     type DialogOnClickListener = android.content.DialogInterface.OnClickListener
     type DialogInterface   = android.content.DialogInterface
+    type SharedPreferences = android.content.SharedPreferences
 
     lazy val actorSystem = ActorSystem("ActorSystem")
 
@@ -38,6 +37,7 @@ package org.mackler {
     case class SetTempo(bpm: Int)
     case class SetSound(sound: Int)
     case class SetUi(activity: MainActivity)
+    case class SavePreferences(preferences: SharedPreferences)
 
   }
 }

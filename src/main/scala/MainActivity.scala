@@ -1,32 +1,7 @@
 package org.mackler.metronome
 
 class MainActivity extends Activity with TypedActivity {
-  private val mIsPlaying = false
-
-  override def onCreateOptionsMenu(menu: Menu): Boolean = {
-    getMenuInflater.inflate(R.menu.main_activity, menu)
-    true
-  }
-
-  override def onOptionsItemSelected(item: MenuItem): Boolean = {
-    item.getItemId match {
-      case R.id.preferences ⇒
-        chooseSound()
-        true
-      case R.id.about ⇒
-        showAbout()
-        true
-      case _ ⇒ super.onOptionsItemSelected(item)
-    }
-  }
-
-  private def showAbout() {
-    logD("show about menu item clicked")
-  }
-
-  def setSeek(progress: Int) {
-    findView(TR.seek_bar).setProgress(progress)
-  }
+  private var mTempo = 0
 
   override def onCreate(bundle: Bundle) {
     super.onCreate(bundle)
@@ -45,6 +20,38 @@ class MainActivity extends Activity with TypedActivity {
     mainActor ! SetUi(this)
   }
 
+  override def onCreateOptionsMenu(menu: Menu): Boolean = {
+    getMenuInflater.inflate(R.menu.main_activity, menu)
+    true
+  }
+
+  override def onPause() {
+    super.onPause()
+    mainActor ! SavePreferences(getPreferences(MODE_PRIVATE))
+    mainActor ! Stop
+    displayStartButton()
+  }
+
+  override def onOptionsItemSelected(item: MenuItem): Boolean = {
+    item.getItemId match {
+      case R.id.preferences ⇒
+        SoundFragment.show(getFragmentManager.beginTransaction(), "soundChooser")
+        true
+      case R.id.about ⇒
+        showAbout()
+        true
+      case _ ⇒ super.onOptionsItemSelected(item)
+    }
+  }
+
+  private def showAbout() {
+    logD("show about menu item clicked")
+  }
+
+  def setSeek(progress: Int) {
+    findView(TR.seek_bar).setProgress(progress)
+  }
+
   def toggle(view: View) {
     val startString = getString(R.string.start)
     val stopString = getString(R.string.stop)
@@ -54,8 +61,8 @@ class MainActivity extends Activity with TypedActivity {
     }
   }
 
-  def displayStartButton { displayButton(true) }
-  def displayStopButton { displayButton(false) }
+  def displayStartButton() { displayButton(true) }
+  def displayStopButton() { displayButton(false) }
 
   private def displayButton(start: Boolean) {
     val button = findView(TR.control_button)
@@ -101,23 +108,6 @@ class MainActivity extends Activity with TypedActivity {
     else if (tempo < 150) "Allegrissimo"
     else if (tempo < 178) "Presto"
     else "Prestissimo"
-  }
-
-  private def chooseSound() {
-    (new SoundFragment).show(getFragmentManager.beginTransaction(),"soundChooser")
-  }
-
-  class SoundFragment extends DialogFragment {
-   override def onCreateDialog(savedInstanceState: Bundle): Dialog = {
-     val builder = new AlertDialogBuilder(getActivity())
-     builder.setTitle(R.string.choose_sound).
-     setItems(R.array.sound_names, new DialogOnClickListener() {
-       def onClick(dialog: DialogInterface, which: Int) {
-	 mainActor ! SetSound(which)
-       }
-     }).
-     create()
-   }
   }
 
 }
