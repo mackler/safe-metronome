@@ -1,7 +1,11 @@
 package org.mackler.metronome
 
 class MainActivity extends Activity with TypedActivity {
-  private var mTempo = 0
+  private def tempo: Int = findView(TR.tempo).getText.toString.toInt
+  def setTempo(newTempo: Int) = {
+    findView(TR.tempo).setText(newTempo.toString)
+    findView(TR.marking).setText(marking(tempo))
+  }
 
   override def onCreate(bundle: Bundle) {
     super.onCreate(bundle)
@@ -9,7 +13,9 @@ class MainActivity extends Activity with TypedActivity {
 
     val onSeekBarChangeListener = new OnSeekBarChangeListener {
       def onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-	if (fromUser) mainActor ! SetTempo(progress + 32)
+	val newTempo = progress + 32
+	setTempo(newTempo)
+	mainActor ! SetTempo(tempo)
       }
       def onStartTrackingTouch(seekBar: SeekBar) {}
       def onStopTrackingTouch(seekBar: SeekBar) {}
@@ -29,7 +35,7 @@ class MainActivity extends Activity with TypedActivity {
     super.onPause()
     mainActor ! SavePreferences(getPreferences(MODE_PRIVATE))
     mainActor ! Stop
-    displayStartButton()
+    displayStartButton(true)
   }
 
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
@@ -56,15 +62,16 @@ class MainActivity extends Activity with TypedActivity {
     val startString = getString(R.string.start)
     val stopString = getString(R.string.stop)
     findView(TR.control_button).getText match {
-      case `startString` ⇒ mainActor ! Start
-      case `stopString` ⇒ mainActor ! Stop
+      case `startString` ⇒
+        displayStartButton(false)
+        mainActor ! Start
+      case `stopString` ⇒
+        displayStartButton(true)
+        mainActor ! Stop
     }
   }
 
-  def displayStartButton() { displayButton(true) }
-  def displayStopButton() { displayButton(false) }
-
-  private def displayButton(start: Boolean) {
+  private def displayStartButton(start: Boolean) {
     val button = findView(TR.control_button)
     start match {
       case true ⇒
@@ -78,16 +85,13 @@ class MainActivity extends Activity with TypedActivity {
   }
 
   def faster(view: View) {
-    mainActor ! Increase
+    setTempo(tempo + 1)
+    mainActor ! SetTempo(tempo)
   }
 
   def slower(view: View) {
-    mainActor ! Decrease
-  }
-
-  def displayTempo(tempo: Int) {
-    findView(TR.tempo).setText(tempo.toString)
-    findView(TR.marking).setText(marking(tempo))
+    setTempo(tempo - 1)
+    mainActor ! SetTempo(tempo)
   }
 
   private def marking(tempo: Int): String = {

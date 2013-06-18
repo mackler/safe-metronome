@@ -69,9 +69,6 @@ class MainActor extends Actor {
       logD(s"Starting, tempo ${mTempo} BPM")
       mIsPlaying = true
       self ! PlayLoop
-      uiOption.get.runOnUiThread(new Runnable { def run {
-	uiOption.get.displayStopButton
-      }})
 
     case PlayLoop ⇒
       val samplesPerBeat = 2646000 / mTempo
@@ -99,7 +96,7 @@ class MainActor extends Actor {
 	}
       }
       uiOption.get.runOnUiThread(new Runnable { def run {
-        uiOption.get.displayTempo(mTempo)
+        uiOption.get.setTempo(mTempo)
         updateSeek(mTempo)
       }})
 
@@ -111,36 +108,17 @@ class MainActor extends Actor {
     case SetTempo(bpm) ⇒
       logD(s"Changing tempo to $bpm BPM")
       mTempo = bpm
-      uiOption.get.runOnUiThread(new Runnable { def run {
-	uiOption.get.displayTempo(mTempo)
-      }})
 
     case Stop ⇒
       logD("Main Actor received Stop message")
       mIsPlaying = false
-      uiOption.get.runOnUiThread(new Runnable { def run {
-	uiOption.get.displayStartButton
-      }})
       logD(s"Audiotrack player state is ${playStateString(track.getPlayState)}")
 
-    case Decrease ⇒
-      if (mTempo > MIN_TEMPO) {
-	mTempo -= 1
-        logD(s"Tempo decreased to $mTempo BPM")
-	updateSeek(mTempo)
-      }
-
-    case Increase ⇒
-      if (mTempo < MAX_TEMPO) {
-	mTempo += 1
-        logD(s"Tempo increased to $mTempo BPM")
-	updateSeek(mTempo)
-      }
   }
 
   private def updateSeek(bpm: Int) {
     uiOption.get.runOnUiThread(new Runnable { def run {
-      uiOption.get.displayTempo(mTempo)
+      uiOption.get.setTempo(mTempo)
       uiOption.get.setSeek(mTempo-32)
     }})
   }
