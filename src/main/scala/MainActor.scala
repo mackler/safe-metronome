@@ -8,6 +8,8 @@ import android.media.AudioTrack._
 // marker at 43801 does not work 43800 works
 
 class MainActor extends Actor {
+  import MainActor._
+
   // sound is raw PCM with sample rate 44100, depth 16 bits, mono, single beat @ 32 BPM
   // ie, 82688 samples per beat (rounded up from 82687.5), file size in 8-bit bytes
   final val FILE_SIZE = 165376
@@ -19,7 +21,9 @@ class MainActor extends Actor {
 
   var uiOption: Option[MainActivity] = None
   var audioTrackOption: Option[AudioTrack] = None
-  val audioData = new Array[Short](FILE_SIZE/2)
+  val claveAudio = new Array[Short](FILE_SIZE/2)
+  val cowbellAudio = new Array[Short](FILE_SIZE/2)
+  var audioData = claveAudio
 
   private def track = audioTrackOption.get
 
@@ -52,10 +56,13 @@ class MainActor extends Actor {
 
   def receive = {
 
-    case Start(androidContext) ⇒
+    case Start ⇒
       logD(s"Starting, tempo ${tempo} BPM")
       mIsPlaying = true
       self ! PlayLoop
+      uiOption.get.runOnUiThread(new Runnable { def run {
+	uiOption.get.displayStopButton
+      }})
 
     case PlayLoop ⇒
       val samplesPerBeat = 2646000 / tempo
@@ -70,12 +77,19 @@ class MainActor extends Actor {
     case SetUi(activity) ⇒
       uiOption = Option(activity)
       val resources: android.content.res.Resources = uiOption.get.getResources
-      val inputStream = resources.openRawResource(R.raw.cowbell)
-      val dataInputStream = new java.io.DataInputStream(inputStream)
-      (0 to ((FILE_SIZE/2)-1)) foreach {
-	audioData.update(_, dataInputStream.readShort())
-      }
-      dataInputStream.close()
+
+      readSound(resources, R.raw.clave, claveAudio)
+      readSound(resources, R.raw.cowbell, cowbellAudio)
+
+      uiOption.get.runOnUiThread(new Runnable { def run {
+	uiOption.get.displayTempo(tempo)
+        updateSeek(tempo)
+      }})
+
+    case SetSound(sound: Int) ⇒ sound match {
+      case 0 ⇒ audioData = claveAudio
+      case 1 ⇒ audioData = cowbellAudio
+    }
 
     case SetTempo(bpm) ⇒
       logD(s"Changing tempo to $bpm BPM")
@@ -87,7 +101,31 @@ class MainActor extends Actor {
     case Stop ⇒
       logD("Main Actor received Stop message")
       mIsPlaying = false
+      uiOption.get.runOnUiThread(new Runnable { def run {
+	uiOption.get.displayStartButton
+      }})
       logD(s"Audiotrack player state is ${playStateString(track.getPlayState)}")
+
+    case Decrease ⇒
+      if (tempo > MIN_TEMPO) {
+	tempo -= 1
+        logD(s"Tempo decreased to $tempo BPM")
+	updateSeek(tempo)
+      }
+
+    case Increase ⇒
+      if (tempo < MAX_TEMPO) {
+	tempo += 1
+        logD(s"Tempo increased to $tempo BPM")
+	updateSeek(tempo)
+      }
+  }
+
+  private def updateSeek(bpm: Int) {
+    uiOption.get.runOnUiThread(new Runnable { def run {
+      uiOption.get.displayTempo(tempo)
+      uiOption.get.setSeek(tempo-32)
+    }})
   }
 
   private def playStateString(state: Int): String = {
@@ -99,4 +137,17 @@ class MainActor extends Actor {
     }
   }
 
+  private def readSound(resources: Resources, source: Int, dest: Array[Short]) {
+    val dataInputStream = new java.io.DataInputStream(resources.openRawResource(source))
+    (0 to ((FILE_SIZE/2)-1)) foreach {
+      dest.update(_, dataInputStream.readShort())
+    }
+    dataInputStream.close()
+  }
+}
+
+object MainActor {
+  // Tempo range is same as Korg KDM-2
+  final val MIN_TEMPO = 32
+  final val MAX_TEMPO = 252
 }

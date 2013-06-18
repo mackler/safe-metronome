@@ -1,38 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
        android:layout_width="match_parent"
        android:layout_height="match_parent"
        android:orientation="vertical"
+       android:padding="5dp"
        >
-  <TextView android:id="@+id/tempo"
-	  android:layout_width="wrap_content"
-	  android:layout_height="wrap_content"
-	  android:textSize="48sp"
-	  />
-  <!-- Range is 32 through 252; add 32 to get BPM -->
-  <SeekBar android:id="@+id/seek_bar"
-	  android:layout_width="match_parent"
-	  android:layout_height="wrap_content"
-          android:max="220"
-	  />
-
-  <LinearLayout
+  <LinearLayout android:id="@+id/tempo_display"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       >
-
-    <Button android:id="@+id/start_button"
+    <Button android:id="@+id/slower_button"
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
-	    android:onClick="start"
-	    android:text="Start"
+	    android:onClick="slower"
+	    android:text="@string/slower"
 	    />
-    <Button android:id="@+id/stop_button"
+    <TextView android:id="@+id/tempo"
+	      android:layout_width="wrap_content"
+	      android:layout_height="wrap_content"
+	      android:textSize="48sp"
+	      android:text="Loading..."
+	      />
+    <Button android:id="@+id/faster_button"
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
-	    android:onClick="stop"
-	    android:text="Stop"
+	    android:onClick="faster"
+	    android:text="@string/faster"
 	    />
   </LinearLayout>
-</LinearLayout>
+
+  <TextView android:id="@+id/marking"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentTop="true"
+	    android:layout_alignParentRight="true"
+	    />
+
+  <!-- Tempo range is 32 through 252 BPM
+       Add 32 to the slider value to get BPM -->
+  <SeekBar android:id="@+id/seek_bar"
+	   android:layout_width="match_parent"
+	   android:layout_height="wrap_content"
+	   android:max="220"
+	   android:layout_below="@id/tempo_display"
+	   android:paddingTop="25dp"
+	   android:paddingBottom="10dp"
+	  />
+
+  <Button android:id="@+id/control_button"
+	  android:layout_width="match_parent"
+	  android:layout_height="wrap_content"
+	  android:onClick="toggle"
+	  android:layout_alignParentBottom="true"
+	  android:text="@string/start"
+	  android:background="@android:color/holo_green_light"
+	  />
+</RelativeLayout>
