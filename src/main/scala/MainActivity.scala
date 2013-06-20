@@ -29,8 +29,7 @@ class MainActivity extends Activity with TypedActivity {
 	setTempo(newTempo)
 	mainActor ! SetTempo(mTempo)
       }
-      def onStartTrackingTouch(seekBar: SeekBar) {}
-      def onStopTrackingTouch(seekBar: SeekBar) {}
+      def onStartTrackingTouch(seekBar: SeekBar) {}; def onStopTrackingTouch(seekBar: SeekBar) {}
     }
 
     findView(TR.seek_bar).setOnSeekBarChangeListener(onSeekBarChangeListener)
@@ -99,6 +98,26 @@ class MainActivity extends Activity with TypedActivity {
       case `stopString` ⇒
         displayStartButton(true)
         mainActor ! Stop
+    }
+  }
+
+  private var tapped: Long = 0
+  def onTap(view: View) {
+    if (tapped == 0) {
+      tapped = System.currentTimeMillis
+      findView(TR.tap_button).setBackgroundResource(android.R.color.holo_blue_bright)
+      mHandler.postDelayed(new Runnable { def run {
+	tapped = 0 
+	findView(TR.tap_button).setBackgroundResource(android.R.color.holo_orange_light)
+      }}, (60000/32) )
+    } else {
+      val durationInMillis: Int = (System.currentTimeMillis - tapped).toInt
+      setTempo ( 60000 / durationInMillis )
+      setSeek(mTempo - 32)
+      tapped = 0
+      findView(TR.tap_button).setBackgroundResource(android.R.color.holo_orange_light)
+      displayStartButton(false)
+      mainActor ! Start
     }
   }
 

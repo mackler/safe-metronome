@@ -7,6 +7,7 @@
     <string name="set_sound">Sound</string>
     <string name="about">About</string>
     <string name="choose_sound">Choose Sound</string>
+    <string name="tap">Tap</string>
     <string-array name="sound_names">
       <item>Clave</item>
       <item>Cow Bell</item>

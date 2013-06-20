@@ -65,10 +65,11 @@ class MainActor extends Actor {
       editor.apply() // is asynchronous
 
 
-    case Start ⇒
+    case Start ⇒ if (mIsPlaying != true ) {
       logD(s"Starting, tempo ${mTempo} BPM")
       mIsPlaying = true
       self ! PlayLoop
+    }
 
     case PlayLoop ⇒
       val samplesPerBeat = 2646000 / mTempo
