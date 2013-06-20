@@ -1,10 +1,22 @@
 package org.mackler.metronome
 
 class MainActivity extends Activity with TypedActivity {
-  private def tempo: Int = findView(TR.tempo).getText.toString.toInt
+
+  private val mHandler = new android.os.Handler
+
+  private var mTempo = 0
   def setTempo(newTempo: Int) = {
-    findView(TR.tempo).setText(newTempo.toString)
-    findView(TR.marking).setText(marking(tempo))
+    mTempo = if (newTempo < MainActor.MIN_TEMPO) MainActor.MIN_TEMPO
+             else if (newTempo > MainActor.MAX_TEMPO) MainActor.MAX_TEMPO
+             else newTempo
+    findView(TR.tempo).setText(mTempo.toString)
+    findView(TR.marking).setText(marking(mTempo))
+  }
+
+  private def adjustTempo(delta: Int) {
+    setTempo(mTempo + delta)
+    setSeek(mTempo-32)
+    mainActor ! SetTempo(mTempo)
   }
 
   override def onCreate(bundle: Bundle) {
@@ -15,7 +27,7 @@ class MainActivity extends Activity with TypedActivity {
       def onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
 	val newTempo = progress + 32
 	setTempo(newTempo)
-	mainActor ! SetTempo(tempo)
+	mainActor ! SetTempo(mTempo)
       }
       def onStartTrackingTouch(seekBar: SeekBar) {}
       def onStopTrackingTouch(seekBar: SeekBar) {}
@@ -23,8 +35,27 @@ class MainActivity extends Activity with TypedActivity {
 
     findView(TR.seek_bar).setOnSeekBarChangeListener(onSeekBarChangeListener)
 
+    findView(TR.slower_button).setOnLongClickListener(new android.view.View.OnLongClickListener { def onLongClick(v: View) = {
+      mHandler.post(new LongPressRunnable(false))
+      true
+    }})
+
+    findView(TR.faster_button).setOnLongClickListener(new android.view.View.OnLongClickListener { def onLongClick(v: View) = {
+      mHandler.post(new LongPressRunnable(true))
+      true
+    }})
+
     mainActor ! SetUi(this)
   }
+
+  private class LongPressRunnable(faster: Boolean) extends Runnable { def run {
+    val (amount, button) = if (faster)
+      (1, findView(TR.faster_button))
+    else
+      (-1, findView(TR.slower_button))
+    adjustTempo(amount)
+    if (button.isPressed) mHandler.post(this)
+  }}
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
     getMenuInflater.inflate(R.menu.main_activity, menu)
@@ -84,15 +115,8 @@ class MainActivity extends Activity with TypedActivity {
     }
   }
 
-  def faster(view: View) {
-    setTempo(tempo + 1)
-    mainActor ! SetTempo(tempo)
-  }
-
-  def slower(view: View) {
-    setTempo(tempo - 1)
-    mainActor ! SetTempo(tempo)
-  }
+  def faster(view: View) { adjustTempo(1) }
+  def slower(view: View) { adjustTempo(-1) }
 
   private def marking(tempo: Int): String = {
     if (tempo < 40) "Grave"
