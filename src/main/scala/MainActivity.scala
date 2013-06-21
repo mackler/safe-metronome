@@ -61,13 +61,6 @@ class MainActivity extends Activity with TypedActivity {
     true
   }
 
-  override def onPause() {
-    super.onPause()
-    mainActor ! SavePreferences(getPreferences(MODE_PRIVATE))
-    mainActor ! Stop
-    displayStartButton(true)
-  }
-
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
     item.getItemId match {
       case R.id.preferences ⇒
@@ -78,6 +71,13 @@ class MainActivity extends Activity with TypedActivity {
         true
       case _ ⇒ super.onOptionsItemSelected(item)
     }
+  }
+
+  override def onPause() {
+    super.onPause()
+    mainActor ! SavePreferences(getPreferences(MODE_PRIVATE))
+    mainActor ! Stop
+    displayStartButton(true)
   }
 
   private def showAbout() {
@@ -111,8 +111,8 @@ class MainActivity extends Activity with TypedActivity {
 	findView(TR.tap_button).setBackgroundResource(android.R.color.holo_orange_light)
       }}, (60000/32) )
     } else {
-      val durationInMillis: Int = (System.currentTimeMillis - tapped).toInt
-      setTempo ( 60000 / durationInMillis )
+      val durationInMillis = System.currentTimeMillis - tapped
+      setTempo ( (60000.0 / durationInMillis ).round.toInt )
       setSeek(mTempo - 32)
       tapped = 0
       findView(TR.tap_button).setBackgroundResource(android.R.color.holo_orange_light)

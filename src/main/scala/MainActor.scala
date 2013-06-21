@@ -2,9 +2,6 @@ package org.mackler.metronome
 
 import scala.concurrent.duration._
 
-import android.media.AudioTrack
-import android.media.AudioTrack._
-
 // marker at 43801 does not work 43800 works
 
 class MainActor extends Actor {
@@ -15,7 +12,8 @@ class MainActor extends Actor {
   final val FILE_SIZE = 165376
     // 10335, 5167, 4983: bad buffer sizes
     // 9600 works
-  val bufferSizeinBytes = 19200
+//  val bufferSizeInBytes = 19200 // TODO: find optimal buffer size programmatically
+  val bufferSizeInBytes = 4800 // TODO: find optimal buffer size programmatically
   var mIsPlaying: Boolean = false
   case object PlayLoop
 
@@ -30,15 +28,14 @@ class MainActor extends Actor {
   var mTempo = 0
 
   override def preStart {
-    val minBufferSize = AudioTrack.getMinBufferSize(44100,android.media.AudioFormat.CHANNEL_OUT_MONO,
-					      android.media.AudioFormat.ENCODING_PCM_16BIT)
+    val minBufferSize = audioTrackGetMinBufferSize(44100,CHANNEL_OUT_MONO,ENCODING_PCM_16BIT)
     audioTrackOption = Option(
       new AudioTrack(3,
 		     44100,
-		     android.media.AudioFormat.CHANNEL_OUT_MONO,
-		     android.media.AudioFormat.ENCODING_PCM_16BIT,
-		     bufferSizeinBytes,
-		     AudioTrack.MODE_STREAM)
+		     CHANNEL_OUT_MONO,
+		     ENCODING_PCM_16BIT,
+		     bufferSizeInBytes,
+		     MODE_STREAM)
     )
   }
 
@@ -48,43 +45,17 @@ class MainActor extends Actor {
   val endListener = new OnPlaybackPositionUpdateListener {
     def onMarkerReached(track: AudioTrack) {
       logD("end marker reached")
-//      self ! PlayLoop
+      // TODO: give visual beat indication
     }
     def onPeriodicNotification(track: AudioTrack) {}
   }
 
   def receive = {
 
-    case SavePreferences(preferences) ⇒
-      val editor = preferences.edit
-      editor.putInt("tempo", mTempo)
-      editor.putString("sound", audioData match {
-	case `claveAudio` ⇒ "clave"
-	case `cowbellAudio` ⇒ "cowbell"
-      })
-      editor.apply() // is asynchronous
-
-
-    case Start ⇒ if (mIsPlaying != true ) {
-      logD(s"Starting, tempo ${mTempo} BPM")
-      mIsPlaying = true
-      self ! PlayLoop
-    }
-
-    case PlayLoop ⇒
-      val samplesPerBeat = 2646000 / mTempo
-      if (mIsPlaying) {
-	track.write(audioData, 0, samplesPerBeat)
-	track.setNotificationMarkerPosition (samplesPerBeat-1)
-	track.setPlaybackPositionUpdateListener(endListener)
-	if (track.getPlayState != PLAYSTATE_PLAYING) track.play()
-	self ! PlayLoop
-      }
-
     case SetUi(activity) ⇒
       uiOption = Option(activity)
       if (mTempo == 0) {
-        val resources: android.content.res.Resources = uiOption.get.getResources
+        val resources = uiOption.get.getResources
 
         readSound(resources, R.raw.clave, claveAudio)
         readSound(resources, R.raw.cowbell, cowbellAudio)
@@ -101,19 +72,43 @@ class MainActor extends Actor {
         updateSeek(mTempo)
       }})
 
+    case Start ⇒ if (mIsPlaying != true ) {
+      mIsPlaying = true
+      // not sure why this next line is necessary, but w/o it I hear one
+      // buffer's-worth of the sound sample, as if the first call to write only
+      // writes until the buffer is full, but the rest of the samples are lost.
+      track.write(new Array[Short](bufferSizeInBytes/2), 0, bufferSizeInBytes/2)
+      self ! PlayLoop
+    }
+
+    case PlayLoop ⇒
+      val samplesPerBeat = 2646000 / mTempo
+      if (mIsPlaying) {
+	logD(s"Writing $samplesPerBeat samples to audio track")
+	track.write(audioData, 0, samplesPerBeat)
+	track.setNotificationMarkerPosition (samplesPerBeat-1)
+	track.setPlaybackPositionUpdateListener(endListener)
+	if (track.getPlayState != PLAYSTATE_PLAYING) track.play()
+	self ! PlayLoop
+      } else track.stop()
+
+    case Stop ⇒ mIsPlaying = false
+
+    case SetTempo(bpm) ⇒ mTempo = bpm
+
     case SetSound(sound: Int) ⇒ sound match {
       case 0 ⇒ audioData = claveAudio
       case 1 ⇒ audioData = cowbellAudio
     }
 
-    case SetTempo(bpm) ⇒
-      logD(s"Changing tempo to $bpm BPM")
-      mTempo = bpm
-
-    case Stop ⇒
-      logD("Main Actor received Stop message")
-      mIsPlaying = false
-      logD(s"Audiotrack player state is ${playStateString(track.getPlayState)}")
+    case SavePreferences(preferences) ⇒
+      val editor = preferences.edit
+      editor.putInt("tempo", mTempo)
+      editor.putString("sound", audioData match {
+	case `claveAudio`   ⇒ "clave"
+	case `cowbellAudio` ⇒ "cowbell"
+      })
+      editor.apply() // is asynchronous
 
   }
 

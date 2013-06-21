@@ -8,8 +8,7 @@
 	      >
   <RelativeLayout
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_weight="1"
+      android:layout_height="wrap_content"
       >
     <LinearLayout android:id="@+id/tempo_display"
 		  android:layout_width="wrap_content"
@@ -49,6 +48,7 @@
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="match_parent"
+      android:gravity="center"
       android:layout_weight="1"
       >
     <!-- Tempo range is 32 through 252 BPM
@@ -58,8 +58,6 @@
 	     android:layout_height="wrap_content"
 	     android:max="220"
 	     android:layout_below="@id/tempo_display"
-	     android:paddingTop="25dp"
-	     android:paddingBottom="10dp"
 	     />
 
   </LinearLayout>
@@ -90,5 +88,15 @@
 	      android:onClick="onTap"
 	      />
   </LinearLayout>
+
+<TextView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Adam Mackler"
+    android:textColor="@android:color/holo_blue_dark"
+    android:textStyle="italic"
+    android:typeface="serif"
+    android:gravity="center"
+    />
 
 </LinearLayout>
