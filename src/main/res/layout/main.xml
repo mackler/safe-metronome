@@ -6,44 +6,57 @@
 	      android:orientation="vertical"
 	      android:padding="5dp"
 	      >
-  <RelativeLayout
+  <!-- Top row of three -->
+  <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       >
+    <!-- Includes the numeral indicator and increase & decrease speed buttons -->
     <LinearLayout android:id="@+id/tempo_display"
-		  android:layout_width="wrap_content"
+		  android:layout_width="match_parent"
 		  android:layout_height="wrap_content"
+		  android:layout_weight="1"
+		  android:background="@android:color/darker_gray"
 		  >
       <Button android:id="@+id/slower_button"
 	      android:layout_width="wrap_content"
 	      android:layout_height="wrap_content"
 	      android:onClick="slower"
 	      android:longClickable="true"
-	      android:text="@string/slower"
+		android:textStyle="bold"
+	      android:textSize="48sp"
+	      android:text="-"
 	      android:src="@android:drawable/arrow_down_float"
 	      />
       <TextView android:id="@+id/tempo"
-		android:layout_width="wrap_content"
+		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
+		  android:layout_weight="1"
 		android:textSize="48sp"
-		android:text="Loading..."
+		android:gravity="center"
+		android:textStyle="bold"
+		android:text="..."
 		/>
       <Button android:id="@+id/faster_button"
 	      android:layout_width="wrap_content"
 	      android:layout_height="wrap_content"
 	      android:onClick="faster"
+		android:textStyle="bold"
+	      android:textSize="48sp"
 	      android:longClickable="true"
-	      android:text="@string/faster"
-	      android:src="@android:drawable/arrow_up_float"
+	      android:text="+"
+	      android:src="@drawable/numberpicker_up_btn_holo_light"
 	      />
     </LinearLayout>
     <TextView android:id="@+id/marking"
-	      android:layout_width="wrap_content"
+	      android:layout_width="match_parent"
+	      android:layout_weight="1"
+	      android:gravity="top|right"
 	      android:layout_height="wrap_content"
 	      android:layout_alignParentTop="true"
 	      android:layout_alignParentRight="true"
 	      />
-  </RelativeLayout>
+  </LinearLayout>
 
   <LinearLayout
       android:layout_width="match_parent"
@@ -56,6 +69,8 @@
     <SeekBar android:id="@+id/seek_bar"
 	     android:layout_width="match_parent"
 	     android:layout_height="wrap_content"
+	     android:thumb="@drawable/slider"
+	     android:progressDrawable="@android:color/holo_orange_dark"
 	     android:max="220"
 	     android:layout_below="@id/tempo_display"
 	     />

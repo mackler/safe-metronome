@@ -13,7 +13,8 @@ class MainActor extends Actor {
     // 10335, 5167, 4983: bad buffer sizes
     // 9600 works
 //  val bufferSizeInBytes = 19200 // TODO: find optimal buffer size programmatically
-  val bufferSizeInBytes = 4800 // TODO: find optimal buffer size programmatically
+//  val bufferSizeInBytes = 4800 // TODO: find optimal buffer size programmatically
+  var bufferSizeInBytes = 0
   var mIsPlaying: Boolean = false
   case object PlayLoop
 
@@ -28,7 +29,7 @@ class MainActor extends Actor {
   var mTempo = 0
 
   override def preStart {
-    val minBufferSize = audioTrackGetMinBufferSize(44100,CHANNEL_OUT_MONO,ENCODING_PCM_16BIT)
+    bufferSizeInBytes = audioTrackGetMinBufferSize(44100,CHANNEL_OUT_MONO,ENCODING_PCM_16BIT)
     audioTrackOption = Option(
       new AudioTrack(3,
 		     44100,

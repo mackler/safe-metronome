@@ -2,6 +2,8 @@ package org.mackler.metronome
 
 class MainActivity extends Activity with TypedActivity {
 
+//  val pathShape = new android.graphics.drawable.shapes.PathShape(SliderPath, 1, 1)
+
   private val mHandler = new android.os.Handler
 
   private var mTempo = 0
@@ -158,3 +160,12 @@ class MainActivity extends Activity with TypedActivity {
   }
 
 }
+
+/*
+object SliderPath extends android.graphics.Path {
+  moveTo(0,0)
+  lineTo(100,0)
+  lineTo(90,100)
+  lineTo(10,100)
+  close()
+}*/
