@@ -31,6 +31,8 @@ package org.mackler {
     type Menu                       = android.view.Menu
     type MenuItem                   = android.view.MenuItem
     type View                       = android.view.View
+    val  GONE                       = android.view.View.GONE
+    val  VISIBLE                    = android.view.View.VISIBLE
     type SeekBar                    = android.widget.SeekBar
     type OnSeekBarChangeListener    = android.widget.SeekBar.OnSeekBarChangeListener
 
@@ -47,6 +49,12 @@ package org.mackler {
     case class SetSound(sound: Int)
     case class SetUi(activity: MainActivity)
     case class SavePreferences(preferences: SharedPreferences)
+
+    case class BuildChops(startTempo: Int, timeInMinutes: Int)
+    case object ChopsTick
+    case object ChopsIncrement
+    case object ChopsComplete
+    case object ChopsCancel
 
   }
 }

@@ -6,6 +6,7 @@ import scala.concurrent.duration._
 
 class MainActor extends Actor {
   import MainActor._
+  implicit val executionContext = context.system.dispatcher
 
   // sound is raw PCM with sample rate 44100, depth 16 bits, mono, single beat @ 32 BPM
   // ie, 82688 samples per beat (rounded up from 82687.5), file size in 8-bit bytes
@@ -23,6 +24,16 @@ class MainActor extends Actor {
   val claveAudio = new Array[Short](FILE_SIZE/2)
   val cowbellAudio = new Array[Short](FILE_SIZE/2)
   var audioData = claveAudio
+
+  /*
+   * These variables are used by the ChopsBuilder™ feature
+   */
+  var mTargetTime: Long = 0
+  var mTimeLeft: Long = 0
+  var mTargetTempo = 0
+  var mChopsTicker: Option[Cancellable] = None
+  var mChopsIncrementer: Option[Cancellable] = None
+  var mChopsCompleter: Option[Cancellable] = None
 
   private def track = audioTrackOption.get
 
@@ -45,7 +56,7 @@ class MainActor extends Actor {
 
   val endListener = new OnPlaybackPositionUpdateListener {
     def onMarkerReached(track: AudioTrack) {
-      logD("end marker reached")
+//      logD("end marker reached")
       // TODO: give visual beat indication
     }
     def onPeriodicNotification(track: AudioTrack) {}
@@ -79,13 +90,14 @@ class MainActor extends Actor {
       // buffer's-worth of the sound sample, as if the first call to write only
       // writes until the buffer is full, but the rest of the samples are lost.
       track.write(new Array[Short](bufferSizeInBytes/2), 0, bufferSizeInBytes/2)
+      if (mTimeLeft > 0) // ChopsBuilder™ was paused
+	startChopsBuilder()
       self ! PlayLoop
     }
 
     case PlayLoop ⇒
       val samplesPerBeat = 2646000 / mTempo
       if (mIsPlaying) {
-	logD(s"Writing $samplesPerBeat samples to audio track")
 	track.write(audioData, 0, samplesPerBeat)
 	track.setNotificationMarkerPosition (samplesPerBeat-1)
 	track.setPlaybackPositionUpdateListener(endListener)
@@ -93,9 +105,26 @@ class MainActor extends Actor {
 	self ! PlayLoop
       } else track.stop()
 
-    case Stop ⇒ mIsPlaying = false
+    case Stop ⇒
+      mIsPlaying = false
+      mTimeLeft = mChopsCompleter match {
+	case Some(_) ⇒
+           // ChopsBuilder™ is active so remember time left and pause it
+	  cancelChopsBuilder()
+	  mTargetTime - System.currentTimeMillis
+	case _ ⇒ 0
+      }
 
-    case SetTempo(bpm) ⇒ mTempo = bpm
+    case SetTempo(bpm) ⇒ if (bpm != mTempo) {
+      mTempo = bpm
+      logD(s"tempo set to $mTempo")
+      mChopsCompleter match {
+	case Some(_) ⇒
+          mTimeLeft = mTargetTime - System.currentTimeMillis
+	  startChopsBuilder()
+	case _ ⇒
+      }
+    }
 
     case SetSound(sound: Int) ⇒ sound match {
       case 0 ⇒ audioData = claveAudio
@@ -111,6 +140,73 @@ class MainActor extends Actor {
       })
       editor.apply() // is asynchronous
 
+    /** The ChopsBuilder™ feature */
+
+    case BuildChops(startTempo: Int, timeInMinutes: Int) ⇒
+      mTargetTempo = mTempo
+      mTempo = startTempo
+      mTimeLeft = timeInMinutes * 60000
+      startChopsBuilder()
+      self ! Start
+
+    case ChopsCancel ⇒
+      logD(s"ChopsBuilder™ cancelled by user")
+      mTimeLeft = 0
+      cancelChopsBuilder()
+
+  } // end of receive method
+
+  private def startChopsBuilder() {
+    if (! mChopsTicker.isDefined) mChopsTicker = Option(
+      context.system.scheduler.schedule(
+	1.seconds,
+	1.seconds
+      )(chopsTick)
+    )
+
+    mTargetTime = System.currentTimeMillis + mTimeLeft
+    val millisPerIncrement = mTimeLeft / (mTargetTempo - mTempo)
+    if (mChopsIncrementer.isDefined) mChopsIncrementer.get.cancel()
+    mChopsIncrementer = Option(context.system.scheduler.schedule(
+      millisPerIncrement.milliseconds,
+      millisPerIncrement.milliseconds
+    )(chopsIncrement))
+
+    if (mChopsCompleter.isDefined) mChopsCompleter.get.cancel()
+    mChopsCompleter = Option(
+      context.system.scheduler.scheduleOnce(mTimeLeft.milliseconds)(chopsComplete)
+    )
+  }
+
+  /* Called both when user cancels, and when tempo is adjusted */
+  private def cancelChopsBuilder() {
+    mChopsTicker.get.cancel()
+    mChopsTicker = None
+    mChopsIncrementer.get.cancel()
+    if (mChopsIncrementer.get.isCancelled) logD("ChopsBuilder™ incrementer cancelled")
+    else  logD("ChopsBuilder™ incrementer FAIL not cancelled")
+    mChopsIncrementer = None
+    mChopsCompleter.get.cancel()
+    mChopsCompleter = None
+  }
+
+  private def chopsIncrement {
+    mTempo += 1
+    updateSeek(mTempo)
+  }
+
+  private def chopsTick {
+    uiOption.get.runOnUiThread(new Runnable { def run {
+      uiOption.get.updateCountdown(((mTargetTime - System.currentTimeMillis) / 1000).toInt)
+    }})
+  }
+
+  private def chopsComplete {
+    logD(s"ChopsBuilder™ complete")
+    cancelChopsBuilder()
+    uiOption.get.runOnUiThread(new Runnable { def run {
+      uiOption.get.clearBuilder()
+    }})
   }
 
   private def updateSeek(bpm: Int) {

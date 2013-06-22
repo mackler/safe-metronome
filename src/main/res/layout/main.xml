@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	      android:layout_width="match_parent"
 	      android:layout_height="match_parent"
@@ -23,41 +22,109 @@
 	      android:layout_height="wrap_content"
 	      android:onClick="slower"
 	      android:longClickable="true"
-		android:textStyle="bold"
+	      android:textStyle="bold"
 	      android:textSize="48sp"
 	      android:text="-"
-	      android:src="@android:drawable/arrow_down_float"
 	      />
-      <TextView android:id="@+id/tempo"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		  android:layout_weight="1"
-		android:textSize="48sp"
-		android:gravity="center"
-		android:textStyle="bold"
-		android:text="..."
-		/>
+      <LinearLayout
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_weight="1"
+	  android:orientation="vertical"
+	  >
+	<TextView android:id="@+id/marking"
+		  android:layout_width="match_parent"
+		  android:gravity="center"
+		  android:textStyle="italic"
+		  android:layout_height="wrap_content"
+		  />
+	<TextView android:id="@+id/tempo"
+		  android:layout_width="match_parent"
+		  android:layout_height="match_parent"
+		  android:textSize="48sp"
+		  android:gravity="center"
+		  android:textStyle="bold"
+		  android:text="..."
+		  />
+      </LinearLayout>
       <Button android:id="@+id/faster_button"
 	      android:layout_width="wrap_content"
 	      android:layout_height="wrap_content"
 	      android:onClick="faster"
-		android:textStyle="bold"
+	      android:textStyle="bold"
 	      android:textSize="48sp"
 	      android:longClickable="true"
 	      android:text="+"
-	      android:src="@drawable/numberpicker_up_btn_holo_light"
 	      />
     </LinearLayout>
-    <TextView android:id="@+id/marking"
-	      android:layout_width="match_parent"
-	      android:layout_weight="1"
-	      android:gravity="top|right"
+    <!-- Upper right corner of screen shows ChopsBuilder™ info, either the
+         button to activate it if it's not running, or else the target tempo,
+         countdown time remaining, and cancel button.-->
+    <FrameLayout
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:gravity="top|right"
+	android:layout_weight="1"
+	>
+      <Button android:id="@+id/chops_button"
+	      android:layout_width="wrap_content"
 	      android:layout_height="wrap_content"
-	      android:layout_alignParentTop="true"
-	      android:layout_alignParentRight="true"
+	      android:text="ChopsBuilder™"
+	      android:onClick="configureChopsBuilder"
 	      />
+      <RelativeLayout android:id="@+id/chops_display"
+		      android:layout_width="match_parent"
+		      android:layout_height="match_parent"
+		      android:orientation="vertical"
+		      android:padding="5dp"
+		      android:visibility="gone"
+		      >
+	<TextView android:id="@+id/target_tempo_label"
+		  android:layout_width="wrap_content"
+		  android:layout_height="wrap_content"
+		  android:text="@string/target_tempo"
+		  android:paddingRight="18sp"
+		  android:layout_alignParentTop="true"
+		  android:textSize="18sp"
+		  android:layout_alignParentLeft="true"
+		  />
+	<TextView android:id="@+id/target_tempo"
+		  android:layout_width="wrap_content"
+		  android:layout_height="wrap_content"
+		  android:layout_toRightOf="@id/target_tempo_label"
+		  android:textStyle="bold"
+		  android:textSize="18sp"
+		  android:layout_alignParentTop="true"
+		  />
+	<TextView android:id="@+id/time_left_label"
+		  android:layout_width="wrap_content"
+		  android:layout_height="wrap_content"
+		  android:text="@string/remaining_time"
+		  android:textSize="18sp"
+		  android:layout_alignParentLeft="true"
+		  android:layout_below="@id/target_tempo_label"
+		  android:paddingRight="18sp"
+		  />
+	<TextView android:id="@+id/time_left"
+		  android:layout_width="wrap_content"
+		  android:textSize="18sp"
+		  android:textStyle="bold"
+		  android:layout_height="wrap_content"
+		  android:layout_below="@id/target_tempo_label"
+		  android:layout_toRightOf="@id/time_left_label"
+		  />
+	<ImageButton android:id="@+id/chops_cancel"
+		     android:layout_width="wrap_content"
+		     android:layout_height="wrap_content"
+		     android:layout_alignParentRight="true"
+		     android:src="@android:drawable/ic_delete"
+		     android:onClick="cancelChops"
+		     />
+      </RelativeLayout>
+    </FrameLayout>
   </LinearLayout>
 
+  <!-- The slider for setting the tempo visually -->
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="match_parent"
@@ -77,6 +144,8 @@
 
   </LinearLayout>
 
+  <!-- The two big buttons at the bottom of the screen, start/stop and
+       set tempo by tapping -->
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="match_parent"
@@ -104,14 +173,13 @@
 	      />
   </LinearLayout>
 
-<TextView
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="Adam Mackler"
-    android:textColor="@android:color/holo_blue_dark"
-    android:textStyle="italic"
-    android:typeface="serif"
-    android:gravity="center"
-    />
-
+  <TextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="Adam Mackler"
+      android:textColor="@android:color/holo_blue_dark"
+      android:textStyle="italic"
+      android:typeface="serif"
+      android:gravity="center"
+      />
 </LinearLayout>

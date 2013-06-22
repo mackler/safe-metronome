@@ -29,7 +29,8 @@ class MainActivity extends Activity with TypedActivity {
       def onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
 	val newTempo = progress + 32
 	setTempo(newTempo)
-	mainActor ! SetTempo(mTempo)
+	if (fromUser) mainActor ! SetTempo(mTempo)
+
       }
       def onStartTrackingTouch(seekBar: SeekBar) {}; def onStopTrackingTouch(seekBar: SeekBar) {}
     }
@@ -49,6 +50,11 @@ class MainActivity extends Activity with TypedActivity {
     mainActor ! SetUi(this)
   }
 
+  def cancelChops(view: View) {
+    mainActor ! ChopsCancel
+    clearBuilder()
+  }
+
   private class LongPressRunnable(faster: Boolean) extends Runnable { def run {
     val (amount, button) = if (faster)
       (1, findView(TR.faster_button))
@@ -66,10 +72,10 @@ class MainActivity extends Activity with TypedActivity {
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
     item.getItemId match {
       case R.id.preferences ⇒
-        SoundFragment.show(getFragmentManager.beginTransaction(), "soundChooser")
+        (new SoundFragment).show(getFragmentManager.beginTransaction(), "soundChooser")
         true
       case R.id.about ⇒
-        showAbout()
+        (new AboutFragment).show(getFragmentManager.beginTransaction(), "about")
         true
       case _ ⇒ super.onOptionsItemSelected(item)
     }
@@ -82,12 +88,32 @@ class MainActivity extends Activity with TypedActivity {
     displayStartButton(true)
   }
 
-  private def showAbout() {
-    logD("show about menu item clicked")
-  }
-
   def setSeek(progress: Int) {
     findView(TR.seek_bar).setProgress(progress)
+  }
+
+  def configureChopsBuilder(view: View) { showCountdownDialog() }
+
+  def showCountdownDialog() {
+    (new CountdownFragment).show(getFragmentManager.beginTransaction(), "countdown")
+  }
+
+  def startChopsBuilder(startTempo: Int, countdownMinutes: Int) {
+    findView(TR.target_tempo).setText(s"$mTempo BPM")
+    findView(TR.time_left).setText(s"$countdownMinutes:00")
+    setTempo(startTempo)
+    setSeek(mTempo-32)
+    findView(TR.chops_display).setVisibility(VISIBLE)
+    findView(TR.chops_button).setVisibility(GONE)
+    displayStartButton(false)
+    mainActor ! BuildChops(startTempo, countdownMinutes)
+  }
+
+  def showStartDialog(countDown: Int) {
+    val ft = getFragmentManager.beginTransaction
+    val countdownFragment = getFragmentManager.findFragmentByTag("countdown")
+    ft.remove(countdownFragment)
+    (new StartTempoFragment(mTempo-1, countDown)).show(ft, "startTempo")
   }
 
   def toggle(view: View) {
@@ -103,6 +129,18 @@ class MainActivity extends Activity with TypedActivity {
     }
   }
 
+  def clearBuilder() {
+    logD(s"Activity.clearBuilder() called.")
+    findView(TR.chops_display).setVisibility(GONE)
+    findView(TR.chops_button).setVisibility(VISIBLE)
+  }
+
+  def updateCountdown(seconds: Int) {
+    findView(TR.time_left).setText(
+      (seconds/60).toString + ":" + (seconds%60).formatted("%02d")
+    )
+  }
+
   private var tapped: Long = 0
   def onTap(view: View) {
     if (tapped == 0) {
@@ -116,6 +154,7 @@ class MainActivity extends Activity with TypedActivity {
       val durationInMillis = System.currentTimeMillis - tapped
       setTempo ( (60000.0 / durationInMillis ).round.toInt )
       setSeek(mTempo - 32)
+      mainActor ! SetTempo(mTempo)
       tapped = 0
       findView(TR.tap_button).setBackgroundResource(android.R.color.holo_orange_light)
       displayStartButton(false)
