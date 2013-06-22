@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Safe Metronome</string>
-    <string name="start">START</string>
-    <string name="stop">STOP</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
     <string name="set_sound">Sound</string>
     <string name="about">About</string>
     <string name="choose_sound">Choose Sound</string>
@@ -12,7 +12,7 @@
     <string name="back">Back</string>
     <string name="target_tempo">Target: </string>
     <string name="remaining_time">Time Left: </string>
-    <string name="tap">TAP</string>
+    <string name="tap">Tap</string>
     <string-array name="sound_names">
       <item>Clave</item>
       <item>Cow Bell</item>

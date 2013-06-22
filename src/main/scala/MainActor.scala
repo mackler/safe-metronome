@@ -117,7 +117,6 @@ class MainActor extends Actor {
 
     case SetTempo(bpm) ⇒ if (bpm != mTempo) {
       mTempo = bpm
-      logD(s"tempo set to $mTempo")
       mChopsCompleter match {
 	case Some(_) ⇒
           mTimeLeft = mTargetTime - System.currentTimeMillis
@@ -157,36 +156,33 @@ class MainActor extends Actor {
   } // end of receive method
 
   private def startChopsBuilder() {
-    if (! mChopsTicker.isDefined) mChopsTicker = Option(
-      context.system.scheduler.schedule(
-	1.seconds,
-	1.seconds
-      )(chopsTick)
-    )
+    cancelChopsBuilder()
+    if (mTempo < mTargetTempo) {
+      mChopsTicker = Option(
+	context.system.scheduler.schedule(1.seconds,1.seconds)(chopsTick)
+      )
 
-    mTargetTime = System.currentTimeMillis + mTimeLeft
-    val millisPerIncrement = mTimeLeft / (mTargetTempo - mTempo)
-    if (mChopsIncrementer.isDefined) mChopsIncrementer.get.cancel()
-    mChopsIncrementer = Option(context.system.scheduler.schedule(
-      millisPerIncrement.milliseconds,
-      millisPerIncrement.milliseconds
-    )(chopsIncrement))
+      mTargetTime = System.currentTimeMillis + mTimeLeft
+      val millisPerIncrement = mTimeLeft / (mTargetTempo - mTempo)
 
-    if (mChopsCompleter.isDefined) mChopsCompleter.get.cancel()
-    mChopsCompleter = Option(
-      context.system.scheduler.scheduleOnce(mTimeLeft.milliseconds)(chopsComplete)
-    )
+      mChopsIncrementer = Option(context.system.scheduler.schedule(
+	millisPerIncrement.milliseconds,
+	millisPerIncrement.milliseconds
+      )(chopsIncrement))
+
+      mChopsCompleter = Option(
+	context.system.scheduler.scheduleOnce(mTimeLeft.milliseconds)(chopsComplete)
+      )
+    } else mTimeLeft = 0 // if the starting tempo is not less than the target tempo, do nothing
   }
 
   /* Called both when user cancels, and when tempo is adjusted */
   private def cancelChopsBuilder() {
-    mChopsTicker.get.cancel()
+    if (mChopsTicker.isDefined) mChopsTicker.get.cancel()
     mChopsTicker = None
-    mChopsIncrementer.get.cancel()
-    if (mChopsIncrementer.get.isCancelled) logD("ChopsBuilder™ incrementer cancelled")
-    else  logD("ChopsBuilder™ incrementer FAIL not cancelled")
+    if (mChopsIncrementer.isDefined) mChopsIncrementer.get.cancel()
     mChopsIncrementer = None
-    mChopsCompleter.get.cancel()
+    if (mChopsCompleter.isDefined) mChopsCompleter.get.cancel()
     mChopsCompleter = None
   }
 

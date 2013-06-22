@@ -47,15 +47,16 @@ class CountdownFragment extends DialogFragment {
   }
 }
 
-class StartTempoFragment(max: Int, countDown: Int) extends DialogFragment {
+class StartTempoFragment(max: Int, val countDown: Int) extends DialogFragment {
   override def onCreateDialog(savedInstanceState: Bundle): Dialog = {
     logD(s"creating start tempo dialog, count down $countDown minutes")
-    val layout = getActivity.getLayoutInflater.inflate(R.layout.start_tempo, null)
-    val tempoPicker = layout.findViewById(R.id.tempo_picker).asInstanceOf[android.widget.NumberPicker]
+
+    val tempoLayout = getActivity.getLayoutInflater.inflate(R.layout.start_tempo, null)
+    val tempoPicker = tempoLayout.findViewById(R.id.tempo_picker).asInstanceOf[android.widget.NumberPicker]
     tempoPicker.setMinValue(32)
     tempoPicker.setMaxValue(max)
-    tempoPicker.setValue(max)    
-//    tempoPicker.setWrapSelectorWheel(false)
+    tempoPicker.setValue((max-32)/2)
+    tempoPicker.setWrapSelectorWheel(false)
 
     (new AlertDialogBuilder(getActivity)).
     setTitle(R.string.set_start_tempo).
@@ -67,12 +68,7 @@ class StartTempoFragment(max: Int, countDown: Int) extends DialogFragment {
     setNegativeButton(R.string.cancel, new DialogOnClickListener() {
       def onClick(dialog: DialogInterface, which: Int) {}
     }).
-    setNeutralButton(R.string.back, new DialogOnClickListener() {
-      def onClick(dialog: DialogInterface, which: Int) {
-	getActivity.asInstanceOf[MainActivity].showCountdownDialog()
-      }
-    }).
-    setView(layout).
+    setView(tempoLayout).
     create()
   }
 }

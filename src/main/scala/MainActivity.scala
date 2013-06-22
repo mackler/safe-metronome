@@ -145,20 +145,35 @@ class MainActivity extends Activity with TypedActivity {
   def onTap(view: View) {
     if (tapped == 0) {
       tapped = System.currentTimeMillis
-      findView(TR.tap_button).setBackgroundResource(android.R.color.holo_blue_bright)
+      view.setBackgroundResource(android.R.color.holo_blue_bright)
       mHandler.postDelayed(new Runnable { def run {
 	tapped = 0 
-	findView(TR.tap_button).setBackgroundResource(android.R.color.holo_orange_light)
+	view.setBackgroundResource(android.R.color.holo_orange_light)
       }}, (60000/32) )
     } else {
       val durationInMillis = System.currentTimeMillis - tapped
-      setTempo ( (60000.0 / durationInMillis ).round.toInt )
-      setSeek(mTempo - 32)
-      mainActor ! SetTempo(mTempo)
       tapped = 0
-      findView(TR.tap_button).setBackgroundResource(android.R.color.holo_orange_light)
+      val newTempo = (60000.0 / durationInMillis ).round.toInt
+      if (view == findView(TR.tap_button)) {
+	setTempo ( newTempo )
+	setSeek(mTempo - 32)
+	mainActor ! SetTempo(mTempo)
+	view.setBackgroundResource(android.R.color.holo_orange_light)
+	mainActor ! Start
+      } else {
+	val ft = getFragmentManager.beginTransaction
+	val fragment = getFragmentManager.findFragmentByTag("startTempo")
+	if (newTempo < mTempo) {
+	  startChopsBuilder (
+	    newTempo, fragment.asInstanceOf[StartTempoFragment].countDown
+	  )
+	  setTempo ( newTempo )
+	  setSeek(mTempo - 32)
+	}
+	ft.remove(fragment)
+	ft.commit()
+      }
       displayStartButton(false)
-      mainActor ! Start
     }
   }
 

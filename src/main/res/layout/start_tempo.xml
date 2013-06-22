@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- This layout is displayed for the user to select the
-     starting tempo when operating the ChopsBuilder™ feature -->
+starting tempo when operating the ChopsBuilder™ feature -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
->
+	      android:layout_width="match_parent"
+	      android:layout_height="match_parent"
+	      >
   <NumberPicker android:id="@+id/tempo_picker"
 		android:layout_width="wrap_content"
 		android:layout_height="match_parent"
 		/>
+  <TextView android:id="@+id/dialog_tap_button"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:layout_weight="1"
+	    android:textSize="36sp"
+	    android:text="@string/tap"
+	    android:textAllCaps="true"
+	    android:background="@android:color/holo_orange_light"
+	    android:clickable="true"
+	    android:gravity="center"
+	    android:onClick="onTap"
+	    />
 </LinearLayout>
