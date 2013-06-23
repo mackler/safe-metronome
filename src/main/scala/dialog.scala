@@ -55,7 +55,7 @@ class StartTempoFragment(max: Int, val countDown: Int) extends DialogFragment {
     val tempoPicker = tempoLayout.findViewById(R.id.tempo_picker).asInstanceOf[android.widget.NumberPicker]
     tempoPicker.setMinValue(32)
     tempoPicker.setMaxValue(max)
-    tempoPicker.setValue((max-32)/2)
+    tempoPicker.setValue(((max-32)/2)+32)
     tempoPicker.setWrapSelectorWheel(false)
 
     (new AlertDialogBuilder(getActivity)).

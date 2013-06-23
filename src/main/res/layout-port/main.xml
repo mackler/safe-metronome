@@ -10,17 +10,27 @@
       android:layout_weight="1"
       android:orientation="vertical"
       >
-    <include layout="@layout/tempo_numeral"/>
-    <include layout="@layout/chopsbuilder"/>
+    <LinearLayout android:id="@+id/tempo_display"
+		  android:layout_width="match_parent"
+		  android:layout_height="wrap_content"
+		  android:background="@android:color/darker_gray"
+		  >
+      <include layout="@layout/tempo_numeral"/>
+    </LinearLayout>
+    <FrameLayout
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:gravity="right"
+	>
+      <include layout="@layout/chopsbuilder"/>
+    </FrameLayout>
     <Button android:id="@+id/control_button"
 	    style="@style/ControlButton"
 	    android:onClick="toggle"
 	    android:text="@string/start"
 	    android:background="@android:color/holo_green_light"
-	    android:visibility="gone"
 	    />
     <TextView android:id="@+id/tap_button"
-	    android:visibility="gone"
 	      style="@style/ControlButton"
 	      android:text="@string/tap"
 	      android:background="@android:color/holo_orange_light"
@@ -28,10 +38,9 @@
 	      />
   </LinearLayout>
 
-  <SeekBar android:id="@+id/seek_bar"
+  <android.widget.VerticalSeekBar android:id="@+id/seek_bar"
 	   android:layout_width="wrap_content"
 	   android:layout_height="match_parent"
-	   style="@style/Widget.ProgressBar.Vertical"
 	   android:padding="8dp"
 	   android:thumb="@drawable/slider"
 	   android:progressDrawable="@android:color/holo_orange_dark"

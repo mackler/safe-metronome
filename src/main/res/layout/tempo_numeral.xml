@@ -1,19 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Includes the numeral indicator and increase & decrease speed buttons -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	      android:id="@+id/tempo_display"
-	      android:layout_width="match_parent"
-	      android:layout_height="wrap_content"
-	      android:layout_weight="1"
-	      android:background="@android:color/darker_gray"
-	      >
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
   <Button android:id="@+id/slower_button"
-	  android:layout_width="wrap_content"
-	  android:layout_height="wrap_content"
+	  style="@style/IncrementButton"
 	  android:onClick="slower"
-	  android:longClickable="true"
-	  android:textStyle="bold"
-	  android:textSize="48dp"
 	  android:text="-"
 	  />
   <LinearLayout
@@ -22,16 +12,9 @@
       android:layout_weight="1"
       android:orientation="vertical"
       >
-    <RelativeLayout
-	android:layout_width="match_parent"
-	android:layout_height="wrap_content"
-	>
+    <RelativeLayout android:layout_width="wrap_content"	android:layout_height="wrap_content">
       <TextView android:id="@+id/marking"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:gravity="center"
-		android:textStyle="italic"
-		android:typeface="serif"
+		style="@style/FinePrint"
 		android:layout_alignParentTop="true"
 		/>
       <TextView android:id="@+id/tempo"
@@ -44,27 +27,17 @@
 		android:textStyle="bold"
 		android:text="..."
 		/>
-
       <TextView
-	  android:layout_width="match_parent"
-	  android:layout_height="wrap_content"
+	  style="@style/FinePrint"
 	  android:text="Adam Mackler"
 	  android:paddingTop="40dp"
-	  android:textStyle="italic"
-	  android:typeface="serif"
-	  android:gravity="center"
 	  android:layout_below="@id/marking"
 	  />
-
     </RelativeLayout>
   </LinearLayout>
   <Button android:id="@+id/faster_button"
-	  android:layout_width="wrap_content"
-	  android:layout_height="wrap_content"
+	  style="@style/IncrementButton"
 	  android:onClick="faster"
-	  android:textStyle="bold"
-	  android:textSize="48dp"
-	  android:longClickable="true"
 	  android:text="+"
 	  />
-</LinearLayout>
+</merge>

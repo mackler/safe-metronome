@@ -104,7 +104,7 @@ class MainActivity extends Activity with TypedActivity {
     setTempo(startTempo)
     setSeek(mTempo-32)
     findView(TR.chops_display).setVisibility(VISIBLE)
-    findView(TR.chops_button).setVisibility(GONE)
+    findView(TR.chops_button).setVisibility(INVISIBLE)
     displayStartButton(false)
     mainActor ! BuildChops(startTempo, countdownMinutes)
   }
@@ -131,7 +131,7 @@ class MainActivity extends Activity with TypedActivity {
 
   def clearBuilder() {
     logD(s"Activity.clearBuilder() called.")
-    findView(TR.chops_display).setVisibility(GONE)
+    findView(TR.chops_display).setVisibility(INVISIBLE)
     findView(TR.chops_button).setVisibility(VISIBLE)
   }
 

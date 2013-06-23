@@ -2,12 +2,7 @@
 <!-- This layout shows ChopsBuilder™ info, by default the
      button to activate it if it's not running, or else the target tempo,
      countdown time remaining, and cancel button.-->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"    
-	     android:layout_width="match_parent"
-	     android:layout_height="wrap_content"
-	     android:gravity="right"
-	     android:layout_weight="1"
-	     >
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
   <LinearLayout android:id="@+id/chops_button"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
@@ -25,7 +20,7 @@
 		  android:layout_height="match_parent"
 		  android:orientation="vertical"
 		  android:padding="5dp"
-		  android:visibility="gone"
+		  android:visibility="invisible"
 		  >
     <TextView android:id="@+id/target_tempo_label"
 	      android:layout_width="wrap_content"
@@ -69,4 +64,4 @@
 		 android:onClick="cancelChops"
 		 />
   </RelativeLayout>
-</FrameLayout>
+</merge>

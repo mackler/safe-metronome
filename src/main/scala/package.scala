@@ -31,7 +31,7 @@ package org.mackler {
     type Menu                       = android.view.Menu
     type MenuItem                   = android.view.MenuItem
     type View                       = android.view.View
-    val  GONE                       = android.view.View.GONE
+    val  INVISIBLE                  = android.view.View.INVISIBLE
     val  VISIBLE                    = android.view.View.VISIBLE
     type SeekBar                    = android.widget.SeekBar
     type OnSeekBarChangeListener    = android.widget.SeekBar.OnSeekBarChangeListener
