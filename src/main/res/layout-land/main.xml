@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	      android:layout_width="match_parent"
+	      android:layout_height="match_parent"
+	      android:orientation="vertical"
+	      android:padding="5dp"
+	      >
+  <!-- Top row of three -->
+  <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+    <include layout="@layout/tempo_numeral"/>
+    <include layout="@layout/chopsbuilder"/>
+  </LinearLayout>
+
+  <!-- The slider for setting the tempo visually.
+       Tempo range is 32 through 252 BPM.
+       Add 32 to the slider value to get BPM. -->
+  <SeekBar android:id="@+id/seek_bar"
+	   android:layout_width="match_parent"
+	   android:padding="8dp"
+	   android:layout_height="wrap_content"
+	   android:thumb="@drawable/slider"
+	   android:progressDrawable="@android:color/holo_orange_dark"
+	   android:max="220"
+	   />
+
+  <!-- The two big buttons at the bottom of the screen, start/stop and
+       set tempo by tapping -->
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_weight="1"
+      >
+    <Button android:id="@+id/control_button"
+	    style="@style/ControlButton"
+	    android:onClick="toggle"
+	    android:text="@string/start"
+	    android:background="@android:color/holo_green_light"
+	    />
+    <TextView android:id="@+id/tap_button"
+	      style="@style/ControlButton"
+	      android:text="@string/tap"
+	      android:background="@android:color/holo_orange_light"
+	      android:onClick="onTap"
+	      />
+  </LinearLayout>
+</LinearLayout>

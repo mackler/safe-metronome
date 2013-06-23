@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This layout shows ChopsBuilder™ info, by default the
+     button to activate it if it's not running, or else the target tempo,
+     countdown time remaining, and cancel button.-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"    
+	     android:layout_width="match_parent"
+	     android:layout_height="wrap_content"
+	     android:gravity="right"
+	     android:layout_weight="1"
+	     >
+  <LinearLayout android:id="@+id/chops_button"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:gravity="top|right"
+		>
+    <Button
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:text="ChopsBuilder™"
+	android:onClick="configureChopsBuilder"
+	/>
+  </LinearLayout>
+  <RelativeLayout android:id="@+id/chops_display"
+		  android:layout_width="match_parent"
+		  android:layout_height="match_parent"
+		  android:orientation="vertical"
+		  android:padding="5dp"
+		  android:visibility="gone"
+		  >
+    <TextView android:id="@+id/target_tempo_label"
+	      android:layout_width="wrap_content"
+	      android:layout_height="wrap_content"
+	      android:text="@string/target_tempo"
+	      android:paddingRight="18sp"
+	      android:layout_alignParentTop="true"
+	      android:textSize="18sp"
+	      android:layout_alignParentLeft="true"
+	      />
+    <TextView android:id="@+id/target_tempo"
+	      android:layout_width="wrap_content"
+	      android:layout_height="wrap_content"
+	      android:layout_toRightOf="@id/target_tempo_label"
+	      android:textStyle="bold"
+	      android:textSize="18sp"
+	      android:layout_alignParentTop="true"
+	      />
+    <TextView android:id="@+id/time_left_label"
+	      android:layout_width="wrap_content"
+	      android:layout_height="wrap_content"
+	      android:text="@string/remaining_time"
+	      android:textSize="18sp"
+	      android:layout_alignParentLeft="true"
+	      android:layout_below="@id/target_tempo_label"
+	      android:paddingRight="18sp"
+	      />
+    <TextView android:id="@+id/time_left"
+	      android:layout_width="wrap_content"
+	      android:textSize="18sp"
+	      android:textStyle="bold"
+	      android:layout_height="wrap_content"
+	      android:layout_below="@id/target_tempo_label"
+	      android:layout_toRightOf="@id/time_left_label"
+	      />
+    <ImageButton android:id="@+id/chops_cancel"
+		 android:layout_width="wrap_content"
+		 android:layout_height="wrap_content"
+		 android:layout_alignParentRight="true"
+		 android:src="@android:drawable/ic_delete"
+		 android:onClick="cancelChops"
+		 />
+  </RelativeLayout>
+</FrameLayout>
