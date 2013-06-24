@@ -35,7 +35,8 @@ class MainActivity extends Activity with TypedActivity {
       def onStartTrackingTouch(seekBar: SeekBar) {}; def onStopTrackingTouch(seekBar: SeekBar) {}
     }
 
-    findView(TR.seek_bar).setOnSeekBarChangeListener(onSeekBarChangeListener)
+    // seek_bar is of different types between the landscape and portrait orientation
+    findViewById(R.id.seek_bar).asInstanceOf[SeekBar].setOnSeekBarChangeListener(onSeekBarChangeListener)
 
     findView(TR.slower_button).setOnLongClickListener(new android.view.View.OnLongClickListener { def onLongClick(v: View) = {
       mHandler.post(new LongPressRunnable(false))
@@ -89,7 +90,7 @@ class MainActivity extends Activity with TypedActivity {
   }
 
   def setSeek(progress: Int) {
-    findView(TR.seek_bar).setProgress(progress)
+    findViewById(R.id.seek_bar).asInstanceOf[SeekBar].setProgress(progress)
   }
 
   def configureChopsBuilder(view: View) { showCountdownDialog() }
@@ -98,13 +99,20 @@ class MainActivity extends Activity with TypedActivity {
     (new CountdownFragment).show(getFragmentManager.beginTransaction(), "countdown")
   }
 
-  def startChopsBuilder(startTempo: Int, countdownMinutes: Int) {
+  def displayChopsBuilderData(targetTempo: Int, timeLeftMillis: Int) {
     findView(TR.target_tempo).setText(s"$mTempo BPM")
-    findView(TR.time_left).setText(s"$countdownMinutes:00")
-    setTempo(startTempo)
-    setSeek(mTempo-32)
+    val timeLeftSeconds = timeLeftMillis / 1000
+    val minutes = timeLeftSeconds / 60
+    val seconds = timeLeftSeconds % 60
+    findView(TR.time_left).setText(s"$minutes:${seconds.formatted("%02d")}")
     findView(TR.chops_display).setVisibility(VISIBLE)
     findView(TR.chops_button).setVisibility(INVISIBLE)
+  }
+
+  def startChopsBuilder(startTempo: Int, countdownMinutes: Int) {
+    displayChopsBuilderData(mTempo, countdownMinutes * 60000)
+    setTempo(startTempo)
+    setSeek(mTempo-32)
     displayStartButton(false)
     mainActor ! BuildChops(startTempo, countdownMinutes)
   }
@@ -130,7 +138,6 @@ class MainActivity extends Activity with TypedActivity {
   }
 
   def clearBuilder() {
-    logD(s"Activity.clearBuilder() called.")
     findView(TR.chops_display).setVisibility(INVISIBLE)
     findView(TR.chops_button).setVisibility(VISIBLE)
   }

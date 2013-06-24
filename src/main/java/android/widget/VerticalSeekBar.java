@@ -28,7 +28,6 @@ public class VerticalSeekBar extends SeekBar {
         super(context, attrs);
     }
 
-    /* Next two methods by Ramesh */
     private int x,y,z,w;
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(h, w, oldh, oldw);

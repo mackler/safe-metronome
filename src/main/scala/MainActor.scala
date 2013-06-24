@@ -29,7 +29,7 @@ class MainActor extends Actor {
    * These variables are used by the ChopsBuilder™ feature
    */
   var mTargetTime: Long = 0
-  var mTimeLeft: Long = 0
+  var mTimeLeft: Int = 0
   var mTargetTempo = 0
   var mChopsTicker: Option[Cancellable] = None
   var mChopsIncrementer: Option[Cancellable] = None
@@ -78,10 +78,13 @@ class MainActor extends Actor {
 	  case "clave" ⇒ claveAudio
 	  case "cowbell" ⇒ cowbellAudio
 	}
+	mTargetTempo = preferences.getInt("targetTempo", 0)
+	mTimeLeft = preferences.getInt("timeLeft", 0)
       }
       uiOption.get.runOnUiThread(new Runnable { def run {
         uiOption.get.setTempo(mTempo)
         updateSeek(mTempo)
+	if (mTimeLeft > 0) uiOption.get.displayChopsBuilderData(mTargetTempo, mTimeLeft)
       }})
 
     case Start ⇒ if (mIsPlaying != true ) {
@@ -111,7 +114,7 @@ class MainActor extends Actor {
 	case Some(_) ⇒
            // ChopsBuilder™ is active so remember time left and pause it
 	  cancelChopsBuilder()
-	  mTargetTime - System.currentTimeMillis
+	  timeLeft
 	case _ ⇒ 0
       }
 
@@ -119,7 +122,7 @@ class MainActor extends Actor {
       mTempo = bpm
       mChopsCompleter match {
 	case Some(_) ⇒
-          mTimeLeft = mTargetTime - System.currentTimeMillis
+          mTimeLeft = timeLeft
 	  startChopsBuilder()
 	case _ ⇒
       }
@@ -137,6 +140,8 @@ class MainActor extends Actor {
 	case `claveAudio`   ⇒ "clave"
 	case `cowbellAudio` ⇒ "cowbell"
       })
+      editor.putInt("targetTempo", mTargetTempo)
+      editor.putInt("timeLeft", mTimeLeft)
       editor.apply() // is asynchronous
 
     /** The ChopsBuilder™ feature */
@@ -175,6 +180,8 @@ class MainActor extends Actor {
       )
     } else mTimeLeft = 0 // if the starting tempo is not less than the target tempo, do nothing
   }
+
+  private def timeLeft = (mTargetTime - System.currentTimeMillis).toInt
 
   /* Called both when user cancels, and when tempo is adjusted */
   private def cancelChopsBuilder() {
