@@ -41,16 +41,17 @@ package org.mackler {
     lazy val mainActor: akka.actor.ActorRef =
       actorSystem.actorOf(Props[MainActor], name = "MainActor")
 
+    case class  SetUi(activity: MainActivity)
     case object Start
     case object Stop
+    case object PlayLoop
+    case class  SetTempo(bpm: Int)
+    case class  SetSound(sound: Int)
     case object Decrease
     case object Increase
-    case class SetTempo(bpm: Int)
-    case class SetSound(sound: Int)
-    case class SetUi(activity: MainActivity)
-    case class SavePreferences(preferences: SharedPreferences)
+    case class  SavePreferences(preferences: SharedPreferences)
 
-    case class BuildChops(startTempo: Int, timeInMinutes: Int)
+    case class  BuildChops(startTempo: Int, timeInMinutes: Int)
     case object ChopsTick
     case object ChopsIncrement
     case object ChopsComplete

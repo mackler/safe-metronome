@@ -2,23 +2,19 @@ package org.mackler.metronome
 
 import scala.concurrent.duration._
 
-// marker at 43801 does not work 43800 works
-
 class MainActor extends Actor {
   import MainActor._
   implicit val executionContext = context.system.dispatcher
 
+  var mTempo = 0
+  var mIsPlaying: Boolean = false
+
   // sound is raw PCM with sample rate 44100, depth 16 bits, mono, single beat @ 32 BPM
   // ie, 82688 samples per beat (rounded up from 82687.5), file size in 8-bit bytes
   final val FILE_SIZE = 165376
-    // 10335, 5167, 4983: bad buffer sizes
-    // 9600 works
-//  val bufferSizeInBytes = 19200 // TODO: find optimal buffer size programmatically
-//  val bufferSizeInBytes = 4800 // TODO: find optimal buffer size programmatically
+  // TODO: find optimal buffer size programmatically
   var bufferSizeInBytes = 0
-  var mIsPlaying: Boolean = false
-  case object PlayLoop
-
+ 
   var uiOption: Option[MainActivity] = None
   var audioTrackOption: Option[AudioTrack] = None
   val claveAudio = new Array[Short](FILE_SIZE/2)
@@ -28,16 +24,15 @@ class MainActor extends Actor {
   /*
    * These variables are used by the ChopsBuilder™ feature
    */
-  var mTargetTime: Long = 0
-  var mTimeLeft: Int = 0
-  var mTargetTempo = 0
-  var mChopsTicker: Option[Cancellable] = None
-  var mChopsIncrementer: Option[Cancellable] = None
-  var mChopsCompleter: Option[Cancellable] = None
+  var mTargetTempo : Int  = 0
+  var mTargetTime  : Long = 0
+  var mTimeLeft    : Int  = 0
+  var mChopsTicker      : Option[Cancellable] = None
+  var mChopsIncrementer : Option[Cancellable] = None
+  var mChopsCompleter   : Option[Cancellable] = None
 
   private def track = audioTrackOption.get
-
-  var mTempo = 0
+  private def timeLeft = ((mTargetTime - System.currentTimeMillis) max 0).toInt
 
   override def preStart {
     bufferSizeInBytes = audioTrackGetMinBufferSize(44100,CHANNEL_OUT_MONO,ENCODING_PCM_16BIT)
@@ -56,10 +51,13 @@ class MainActor extends Actor {
 
   val endListener = new OnPlaybackPositionUpdateListener {
     def onMarkerReached(track: AudioTrack) {
-//      logD("end marker reached")
       // TODO: give visual beat indication
     }
     def onPeriodicNotification(track: AudioTrack) {}
+  }
+
+  def runOnUi(f: => Unit) {
+    uiOption.get.runOnUiThread(new Runnable { def run { f }})
   }
 
   def receive = {
@@ -69,23 +67,23 @@ class MainActor extends Actor {
       if (mTempo == 0) {
         val resources = uiOption.get.getResources
 
-        readSound(resources, R.raw.clave, claveAudio)
+        readSound(resources, R.raw.clave,   claveAudio)
         readSound(resources, R.raw.cowbell, cowbellAudio)
 
 	val preferences = uiOption.get.getPreferences(MODE_PRIVATE)
 	mTempo = preferences.getInt("tempo", 120)
         audioData = preferences.getString("sound","clave") match {
-	  case "clave" ⇒ claveAudio
+	  case "clave"   ⇒ claveAudio
 	  case "cowbell" ⇒ cowbellAudio
 	}
 	mTargetTempo = preferences.getInt("targetTempo", 0)
 	mTimeLeft = preferences.getInt("timeLeft", 0)
       }
-      uiOption.get.runOnUiThread(new Runnable { def run {
+      runOnUi {
         uiOption.get.setTempo(mTempo)
         updateSeek(mTempo)
 	if (mTimeLeft > 0) uiOption.get.displayChopsBuilderData(mTargetTempo, mTimeLeft)
-      }})
+      }
 
     case Start ⇒ if (mIsPlaying != true ) {
       mIsPlaying = true
@@ -141,7 +139,7 @@ class MainActor extends Actor {
 	case `cowbellAudio` ⇒ "cowbell"
       })
       editor.putInt("targetTempo", mTargetTempo)
-      editor.putInt("timeLeft", mTimeLeft)
+      editor.putInt("timeLeft", timeLeft)
       editor.apply() // is asynchronous
 
     /** The ChopsBuilder™ feature */
@@ -174,14 +172,14 @@ class MainActor extends Actor {
 	millisPerIncrement.milliseconds,
 	millisPerIncrement.milliseconds
       )(chopsIncrement))
-
       mChopsCompleter = Option(
 	context.system.scheduler.scheduleOnce(mTimeLeft.milliseconds)(chopsComplete)
       )
-    } else mTimeLeft = 0 // if the starting tempo is not less than the target tempo, do nothing
+    } else {
+      mTimeLeft = 0 // if the starting tempo is not less than the target tempo, do nothing
+      runOnUi {	uiOption.get.clearBuilder() }
+    }
   }
-
-  private def timeLeft = (mTargetTime - System.currentTimeMillis).toInt
 
   /* Called both when user cancels, and when tempo is adjusted */
   private def cancelChopsBuilder() {
@@ -199,24 +197,20 @@ class MainActor extends Actor {
   }
 
   private def chopsTick {
-    uiOption.get.runOnUiThread(new Runnable { def run {
-      uiOption.get.updateCountdown(((mTargetTime - System.currentTimeMillis) / 1000).toInt)
-    }})
+    runOnUi { uiOption.get.updateCountdown(((mTargetTime - System.currentTimeMillis) / 1000).toInt) }
   }
 
   private def chopsComplete {
     logD(s"ChopsBuilder™ complete")
     cancelChopsBuilder()
-    uiOption.get.runOnUiThread(new Runnable { def run {
-      uiOption.get.clearBuilder()
-    }})
+    runOnUi { uiOption.get.clearBuilder() }
   }
 
   private def updateSeek(bpm: Int) {
-    uiOption.get.runOnUiThread(new Runnable { def run {
+    runOnUi {
       uiOption.get.setTempo(mTempo)
       uiOption.get.setSeek(mTempo-32)
-    }})
+    }
   }
 
   private def playStateString(state: Int): String = {
