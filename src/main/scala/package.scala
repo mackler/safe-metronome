@@ -6,6 +6,7 @@ package org.mackler {
     val  ActorSystem = akka.actor.ActorSystem
     type Cancellable = akka.actor.Cancellable
     val  Props       = akka.actor.Props
+//    val  Scheduler   = akka.actor.Scheduler
 
     type AlertDialogBuilder         = android.app.AlertDialog.Builder
     type Activity                   = android.app.Activity
@@ -35,6 +36,8 @@ package org.mackler {
     val  VISIBLE                    = android.view.View.VISIBLE
     type SeekBar                    = android.widget.SeekBar
     type OnSeekBarChangeListener    = android.widget.SeekBar.OnSeekBarChangeListener
+
+    type ExecutionContext = scala.concurrent.ExecutionContext
 
     lazy val actorSystem = ActorSystem("ActorSystem")
 

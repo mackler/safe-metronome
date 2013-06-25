@@ -20,19 +20,13 @@ class MainActor extends Actor {
   val claveAudio = new Array[Short](FILE_SIZE/2)
   val cowbellAudio = new Array[Short](FILE_SIZE/2)
   var audioData = claveAudio
-
-  /*
-   * These variables are used by the ChopsBuilder™ feature
-   */
-  var mTargetTempo : Int  = 0
-  var mTargetTime  : Long = 0
-  var mTimeLeft    : Int  = 0
-  var mChopsTicker      : Option[Cancellable] = None
-  var mChopsIncrementer : Option[Cancellable] = None
-  var mChopsCompleter   : Option[Cancellable] = None
+  var mChopsBuilder: Option[ChopsBuilder] = None
 
   private def track = audioTrackOption.get
-  private def timeLeft = ((mTargetTime - System.currentTimeMillis) max 0).toInt
+
+  /* When ChopsBuilder™ is running, this ticker causes a runnable to
+   * be sent to the UI to update the countdown time display */
+  private var mChopsTicker: Option[Cancellable] = None
 
   override def preStart {
     bufferSizeInBytes = audioTrackGetMinBufferSize(44100,CHANNEL_OUT_MONO,ENCODING_PCM_16BIT)
@@ -44,7 +38,10 @@ class MainActor extends Actor {
 		     bufferSizeInBytes,
 		     MODE_STREAM)
     )
+    mChopsBuilder = Option(new ChopsBuilder(context.system.scheduler))
   }
+
+  private def chopsBuilder = mChopsBuilder.get
 
   override def postStop {
   }
@@ -65,6 +62,8 @@ class MainActor extends Actor {
     case SetUi(activity) ⇒
       uiOption = Option(activity)
       if (mTempo == 0) {
+	/* This is the first time this message has been received since
+	 * construction of this Actor, thus read saved preferences. */
         val resources = uiOption.get.getResources
 
         readSound(resources, R.raw.clave,   claveAudio)
@@ -76,53 +75,50 @@ class MainActor extends Actor {
 	  case "clave"   ⇒ claveAudio
 	  case "cowbell" ⇒ cowbellAudio
 	}
-	mTargetTempo = preferences.getInt("targetTempo", 0)
-	mTimeLeft = preferences.getInt("timeLeft", 0)
+	chopsBuilder.setTargetTempo(preferences.getInt("targetTempo", 0))
+	chopsBuilder.setMilliseconds(preferences.getInt("timeLeft", 0))
       }
       runOnUi {
-        uiOption.get.setTempo(mTempo)
-        updateSeek(mTempo)
-	if (mTimeLeft > 0) uiOption.get.displayChopsBuilderData(mTargetTempo, mTimeLeft)
+        uiOption.get.setTempoNumberDisplay(mTempo)
+        uiOption.get.setTempoSliderDisplay(mTempo)
+	if (chopsBuilder.isOn)
+	  uiOption.get.displayChopsBuilderData(chopsBuilder.targetTempo, chopsBuilder.formattedTime)
       }
 
     case Start ⇒ if (mIsPlaying != true ) {
       mIsPlaying = true
-      // not sure why this next line is necessary, but w/o it I hear one
-      // buffer's-worth of the sound sample, as if the first call to write only
-      // writes until the buffer is full, but the rest of the samples are lost.
+      /* not sure why this next line is necessary, but w/o it I hear one
+       * buffer's-worth of the sound sample, as if the first call to write only
+       * writes until the buffer is full, but the rest of the samples in the
+       * loop are lost. */
       track.write(new Array[Short](bufferSizeInBytes/2), 0, bufferSizeInBytes/2)
-      if (mTimeLeft > 0) // ChopsBuilder™ was paused
-	startChopsBuilder()
+      chopsBuilder.synchronized { if (chopsBuilder.isPaused) startChopsBuilder() }
       self ! PlayLoop
     }
 
     case PlayLoop ⇒
-      val samplesPerBeat = 2646000 / mTempo
       if (mIsPlaying) {
+	chopsBuilder.synchronized { if (chopsBuilder.isRunning)
+	  mTempo = chopsBuilder.currentTempo.round
+	}
+	val samplesPerBeat = (2646000 / mTempo).round
 	track.write(audioData, 0, samplesPerBeat)
 	track.setNotificationMarkerPosition (samplesPerBeat-1)
 	track.setPlaybackPositionUpdateListener(endListener)
 	if (track.getPlayState != PLAYSTATE_PLAYING) track.play()
 	self ! PlayLoop
-      } else track.stop()
+      } else track.stop() // if user stops playing, let loop finish
 
     case Stop ⇒
       mIsPlaying = false
-      mTimeLeft = mChopsCompleter match {
-	case Some(_) ⇒
-           // ChopsBuilder™ is active so remember time left and pause it
-	  cancelChopsBuilder()
-	  timeLeft
-	case _ ⇒ 0
-      }
+      chopsBuilder.synchronized { if (chopsBuilder.isRunning) chopsBuilder.pause() }
 
     case SetTempo(bpm) ⇒ if (bpm != mTempo) {
       mTempo = bpm
-      mChopsCompleter match {
-	case Some(_) ⇒
-          mTimeLeft = timeLeft
-	  startChopsBuilder()
-	case _ ⇒
+      chopsBuilder.synchronized {
+	if (chopsBuilder.isRunning) {
+	  chopsBuilder.adjust(mTempo)
+	}
       }
     }
 
@@ -138,88 +134,50 @@ class MainActor extends Actor {
 	case `claveAudio`   ⇒ "clave"
 	case `cowbellAudio` ⇒ "cowbell"
       })
-      editor.putInt("targetTempo", mTargetTempo)
-      editor.putInt("timeLeft", timeLeft)
+      chopsBuilder.synchronized { if (chopsBuilder.isOn) {
+        editor.putInt("targetTempo", chopsBuilder.targetTempo)
+        editor.putInt("timeLeft", chopsBuilder.milliseconds)
+      } else {
+        editor.putInt("targetTempo", 0)
+        editor.putInt("timeLeft", 0)
+      }}
       editor.apply() // is asynchronous
 
     /** The ChopsBuilder™ feature */
 
     case BuildChops(startTempo: Int, timeInMinutes: Int) ⇒
-      mTargetTempo = mTempo
+      chopsBuilder.synchronized {
+        chopsBuilder.setTargetTempo(mTempo)
+        chopsBuilder.setMilliseconds(timeInMinutes * 60000)
+      }
       mTempo = startTempo
-      mTimeLeft = timeInMinutes * 60000
-      startChopsBuilder()
+      chopsBuilder.start(mTempo)(chopsComplete)
       self ! Start
 
     case ChopsCancel ⇒
-      logD(s"ChopsBuilder™ cancelled by user")
-      mTimeLeft = 0
-      cancelChopsBuilder()
+      chopsBuilder.synchronized { if (chopsBuilder.isOn) chopsBuilder.cancel() }
 
   } // end of receive method
 
-  private def startChopsBuilder() {
-    cancelChopsBuilder()
-    if (mTempo < mTargetTempo) {
-      mChopsTicker = Option(
+  private def startChopsBuilder() { chopsBuilder.synchronized {
+    chopsBuilder.reset()
+    if (chopsBuilder.start(mTempo)(chopsComplete)) {
+      mChopsTicker = Option (
 	context.system.scheduler.schedule(1.seconds,1.seconds)(chopsTick)
       )
+    } else runOnUi { uiOption.get.clearBuilder() }
+  }}
 
-      mTargetTime = System.currentTimeMillis + mTimeLeft
-      val millisPerIncrement = mTimeLeft / (mTargetTempo - mTempo)
+  /** Called every second while ChopsBuilder™ is running */
+  private def chopsTick { chopsBuilder.synchronized { if (chopsBuilder.isOn) {
+    val secondsLeft = chopsBuilder.formattedTime
+    logD(s"actor sending tick to ui $secondsLeft seconds")
+    runOnUi { uiOption.get.updateCountdown(secondsLeft) }
+  }}}
 
-      mChopsIncrementer = Option(context.system.scheduler.schedule(
-	millisPerIncrement.milliseconds,
-	millisPerIncrement.milliseconds
-      )(chopsIncrement))
-      mChopsCompleter = Option(
-	context.system.scheduler.scheduleOnce(mTimeLeft.milliseconds)(chopsComplete)
-      )
-    } else {
-      mTimeLeft = 0 // if the starting tempo is not less than the target tempo, do nothing
-      runOnUi {	uiOption.get.clearBuilder() }
-    }
-  }
-
-  /* Called both when user cancels, and when tempo is adjusted */
-  private def cancelChopsBuilder() {
-    if (mChopsTicker.isDefined) mChopsTicker.get.cancel()
-    mChopsTicker = None
-    if (mChopsIncrementer.isDefined) mChopsIncrementer.get.cancel()
-    mChopsIncrementer = None
-    if (mChopsCompleter.isDefined) mChopsCompleter.get.cancel()
-    mChopsCompleter = None
-  }
-
-  private def chopsIncrement {
-    mTempo += 1
-    updateSeek(mTempo)
-  }
-
-  private def chopsTick {
-    runOnUi { uiOption.get.updateCountdown(((mTargetTime - System.currentTimeMillis) / 1000).toInt) }
-  }
-
-  private def chopsComplete {
-    logD(s"ChopsBuilder™ complete")
-    cancelChopsBuilder()
+  private def chopsComplete() {
+    logD(s"Main actor's ChopsBuilder™ completion function caled")
     runOnUi { uiOption.get.clearBuilder() }
-  }
-
-  private def updateSeek(bpm: Int) {
-    runOnUi {
-      uiOption.get.setTempo(mTempo)
-      uiOption.get.setSeek(mTempo-32)
-    }
-  }
-
-  private def playStateString(state: Int): String = {
-    state match {
-      case PLAYSTATE_STOPPED => "stopped"
-      case PLAYSTATE_PAUSED  => "paused"
-      case PLAYSTATE_PLAYING => "playing"
-      case _ => "unknown"
-    }
   }
 
   private def readSound(resources: Resources, source: Int, dest: Array[Short]) {
