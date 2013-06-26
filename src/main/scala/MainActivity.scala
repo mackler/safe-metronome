@@ -145,7 +145,6 @@ class MainActivity extends Activity with TypedActivity {
   }
 
   def updateCountdown(time: String) {
-    logD(s"activity updating time left $time")
     findView(TR.time_left).setText(time)
   }
 

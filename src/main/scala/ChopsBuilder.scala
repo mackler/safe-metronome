@@ -18,7 +18,6 @@ class ChopsBuilder(scheduler: akka.actor.Scheduler)(implicit executionContext: E
   private var mStartTempo       : Int                 = 0
   private var mTargetTime       : Long                = 0
   private var mChopsIncrementer : Option[Cancellable] = None
-  private var mOnCompletion     : () => Unit          = () => {}
 
   def isRunning: Boolean = mChopsCompleter match {
     case Some(_) ⇒ true
@@ -97,16 +96,15 @@ class ChopsBuilder(scheduler: akka.actor.Scheduler)(implicit executionContext: E
     mMillisecondsLeft = 0
   }
 
-  def start(startTempo: Int): Boolean = synchronized {
+  def start(startTempo: Int)(completionFunction: => Unit): Boolean = synchronized {
     logD(s"ChopBuilder's start() called, start $startTempo BPM, target $mTargetTempo BPM; time $mMillisecondsLeft MS")
     if (startTempo < mTargetTempo) {
       mStartTime = System.currentTimeMillis
       mStartTempo = startTempo
       mTargetTime = mStartTime + mMillisecondsLeft
-      logD(s"starttime $mStartTime, targetTime $mTargetTime")
      if (mChopsCompleter.isDefined) { mChopsCompleter.get.cancel() }
       mChopsCompleter = Option (
-	scheduler.scheduleOnce(mMillisecondsLeft.milliseconds)(wrappedCompletion(mOnCompletion))
+	scheduler.scheduleOnce(mMillisecondsLeft.milliseconds)(wrappedCompletion(completionFunction))
       )
       true
     } else { // start tempo was too fast, cancel, reset, turn off and return false
@@ -116,16 +114,13 @@ class ChopsBuilder(scheduler: akka.actor.Scheduler)(implicit executionContext: E
     }
   }
 
-  def setCompletionFunction(f: Function0[Unit]) {
-      mOnCompletion = f
-  }
-
   /** Wrapped combination of the function the client wants called and the code
    * this object wants called upon completion */
-  private def wrappedCompletion(completionFunction: => Unit): () => Unit = {
-    logD(s"ChopsBuilder™ object's complition function called")
+  private def wrappedCompletion(completionFunction: => Unit) {
+    logD(s"ChopsBuilder™ object's completion function called")
     reset()
     mMillisecondsLeft = 0
-    mOnCompletion
+    completionFunction
+    logD(s"ChopsBuilder™ object's completion function completed")
   }
 }

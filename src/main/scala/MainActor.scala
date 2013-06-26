@@ -157,7 +157,6 @@ class MainActor extends Actor {
         chopsBuilder.setMilliseconds(timeInMinutes * 60000)
       }
       mTempo = startTempo
-      chopsBuilder.setCompletionFunction(chopsComplete)
       startChopsBuilder
       self ! Start
 
@@ -170,26 +169,31 @@ class MainActor extends Actor {
     logD(s"actor's startChopsBuilder() called, mTempo is $mTempo")
     chopsBuilder.synchronized {
     chopsBuilder.reset()
-    if (chopsBuilder.start(mTempo)) {
+      logD(s"now calling chopsBuilder.stort() with mTempo = $mTempo")
+    if (chopsBuilder.start(mTempo)(chopsComplete(mTempo))) {
       if (mChopsTicker.isDefined) mChopsTicker.get.cancel()
       mChopsTicker = Option (
 	context.system.scheduler.schedule(1.seconds,1.seconds)(chopsTick)
       )
-      logD(s"ticker is $mChopsTicker")
     } else runOnUi { uiOption.get.clearBuilder() }
   }}
 
   /** Called every second while ChopsBuilder™ is running */
   private def chopsTick {
-    logD("TICK")
     chopsBuilder.synchronized { if (chopsBuilder.isOn) {
     val secondsLeft = chopsBuilder.formattedTime
     runOnUi { uiOption.get.updateCountdown(secondsLeft) }
   }}}
 
-  def chopsComplete() {
-    logD(s"Main actor's ChopsBuilder™ completion function caled")
-    runOnUi { uiOption.get.clearBuilder() }
+  def chopsComplete(tempo: Int) {
+    logD(s"Main actor's ChopsBuilder™ completion function caled, $tempo BPM")
+    mChopsTicker.get.cancel()
+    logD(s"main actor changing tempo from $mTempo to $tempo")
+    mTempo = tempo
+    runOnUi {
+      uiOption.get.setTempoDisplay(mTempo)
+      uiOption.get.clearBuilder()
+    }
   }
 
   private def readSound(resources: Resources, source: Int, dest: Array[Short]) {
