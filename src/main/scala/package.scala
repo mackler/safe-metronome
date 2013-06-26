@@ -60,5 +60,20 @@ package org.mackler {
     case object ChopsComplete
     case object ChopsCancel
 
+    // working messages, targetted for modification
+    case class TargetTempo(tempo: Int)
+    case class Milliseconds(count: Int)
+    case object DataRequest
+    case class Data(targetTempo: Int, timeLeft: String)
+    case class Start(startTempo: Int)
+    case object Reset
+    case object CurrentTempo
+    case object TargetTempo
+    case object Milliseconds
+    case object Pause
+    case class Adjust(tempo: Int)
+    case object FormattedTime
+    case class FormattedTime(time: String)
+    case class Complete(tempo: Int)
   }
 }
