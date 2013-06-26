@@ -79,8 +79,7 @@ class MainActor extends Actor {
 	chopsBuilder.setMilliseconds(preferences.getInt("timeLeft", 0))
       }
       runOnUi {
-        uiOption.get.setTempoNumberDisplay(mTempo)
-        uiOption.get.setTempoSliderDisplay(mTempo)
+        uiOption.get.setTempoDisplay(mTempo)
 	if (chopsBuilder.isOn)
 	  uiOption.get.displayChopsBuilderData(chopsBuilder.targetTempo, chopsBuilder.formattedTime)
       }
@@ -98,9 +97,15 @@ class MainActor extends Actor {
 
     case PlayLoop ⇒
       if (mIsPlaying) {
-	chopsBuilder.synchronized { if (chopsBuilder.isRunning)
-	  mTempo = chopsBuilder.currentTempo.round
-	}
+	chopsBuilder.synchronized { if (chopsBuilder.isRunning) {
+	  val newTempo = chopsBuilder.currentTempo.round
+	  if (newTempo != mTempo) {
+	    mTempo = newTempo
+	    runOnUi {
+              uiOption.get.setTempoDisplay(mTempo)
+	    }
+	  }
+	}}
 	val samplesPerBeat = (2646000 / mTempo).round
 	track.write(audioData, 0, samplesPerBeat)
 	track.setNotificationMarkerPosition (samplesPerBeat-1)
@@ -146,12 +151,14 @@ class MainActor extends Actor {
     /** The ChopsBuilder™ feature */
 
     case BuildChops(startTempo: Int, timeInMinutes: Int) ⇒
+      logD(s"main actor received BuildChops, start $startTempo BPM, $timeInMinutes minutes")
       chopsBuilder.synchronized {
         chopsBuilder.setTargetTempo(mTempo)
         chopsBuilder.setMilliseconds(timeInMinutes * 60000)
       }
       mTempo = startTempo
-      chopsBuilder.start(mTempo)(chopsComplete)
+      chopsBuilder.setCompletionFunction(chopsComplete)
+      startChopsBuilder
       self ! Start
 
     case ChopsCancel ⇒
@@ -159,23 +166,28 @@ class MainActor extends Actor {
 
   } // end of receive method
 
-  private def startChopsBuilder() { chopsBuilder.synchronized {
+  private def startChopsBuilder() {
+    logD(s"actor's startChopsBuilder() called, mTempo is $mTempo")
+    chopsBuilder.synchronized {
     chopsBuilder.reset()
-    if (chopsBuilder.start(mTempo)(chopsComplete)) {
+    if (chopsBuilder.start(mTempo)) {
+      if (mChopsTicker.isDefined) mChopsTicker.get.cancel()
       mChopsTicker = Option (
 	context.system.scheduler.schedule(1.seconds,1.seconds)(chopsTick)
       )
+      logD(s"ticker is $mChopsTicker")
     } else runOnUi { uiOption.get.clearBuilder() }
   }}
 
   /** Called every second while ChopsBuilder™ is running */
-  private def chopsTick { chopsBuilder.synchronized { if (chopsBuilder.isOn) {
+  private def chopsTick {
+    logD("TICK")
+    chopsBuilder.synchronized { if (chopsBuilder.isOn) {
     val secondsLeft = chopsBuilder.formattedTime
-    logD(s"actor sending tick to ui $secondsLeft seconds")
     runOnUi { uiOption.get.updateCountdown(secondsLeft) }
   }}}
 
-  private def chopsComplete() {
+  def chopsComplete() {
     logD(s"Main actor's ChopsBuilder™ completion function caled")
     runOnUi { uiOption.get.clearBuilder() }
   }

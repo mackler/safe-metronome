@@ -7,7 +7,12 @@ class MainActivity extends Activity with TypedActivity {
   private val mHandler = new android.os.Handler
 
   private var mTempo = 0
-//  def setTempo(newTempo: Int) = {
+
+  def setTempoDisplay(newTempo: Int) {
+    setTempoNumberDisplay(newTempo)
+    setTempoSliderDisplay(mTempo)
+  }
+
   def setTempoNumberDisplay(newTempo: Int) = {
     mTempo = if (newTempo < MainActor.MIN_TEMPO) MainActor.MIN_TEMPO
              else if (newTempo > MainActor.MAX_TEMPO) MainActor.MAX_TEMPO
@@ -16,9 +21,12 @@ class MainActivity extends Activity with TypedActivity {
     findView(TR.marking).setText(marking(mTempo))
   }
 
+  def setTempoSliderDisplay(tempo: Int) {
+    findViewById(R.id.seek_bar).asInstanceOf[SeekBar].setProgress(tempo - 32)
+  }
+
   def adjustTempo(delta: Int) {
-    setTempoNumberDisplay(mTempo + delta)
-    setTempoSliderDisplay(mTempo-32)
+    setTempoDisplay(mTempo + delta)
     mainActor ! SetTempo(mTempo)
   }
 
@@ -90,12 +98,6 @@ class MainActivity extends Activity with TypedActivity {
     displayStartButton(true)
   }
 
-//  def setSeek(progress: Int) {
-// TODO change so parameter is tempo, not progress (i.e., starts an minimum tempo, not zero)
-  def setTempoSliderDisplay(progress: Int) {
-    findViewById(R.id.seek_bar).asInstanceOf[SeekBar].setProgress(progress)
-  }
-
   def configureChopsBuilder(view: View) { showCountdownDialog() }
 
   def showCountdownDialog() {
@@ -110,9 +112,9 @@ class MainActivity extends Activity with TypedActivity {
   }
 
   def startChopsBuilder(startTempo: Int, countdownMinutes: Int) {
-    displayChopsBuilderData(mTempo, s"${countdownMinutes * 60000}:00")
-    setTempoNumberDisplay(startTempo)
-    setTempoSliderDisplay(mTempo-32)
+    logD(s"activity's startChopsBuilder() called, startTempo $startTempo")
+    displayChopsBuilderData(mTempo, s"$countdownMinutes:00")
+    setTempoDisplay(startTempo)
     displayStartButton(false)
     mainActor ! BuildChops(startTempo, countdownMinutes)
   }
@@ -161,8 +163,7 @@ class MainActivity extends Activity with TypedActivity {
       tapped = 0
       val newTempo = (60000.0 / durationInMillis ).round.toInt
       if (view == findView(TR.tap_button)) {
-	setTempoNumberDisplay ( newTempo )
-	setTempoSliderDisplay(mTempo - 32)
+	setTempoDisplay ( newTempo )
 	mainActor ! SetTempo(mTempo)
 	view.setBackgroundResource(android.R.color.holo_orange_light)
 	mainActor ! Start
@@ -173,8 +174,7 @@ class MainActivity extends Activity with TypedActivity {
 	  startChopsBuilder (
 	    newTempo, fragment.asInstanceOf[StartTempoFragment].countDown
 	  )
-	  setTempoNumberDisplay ( newTempo )
-	  setTempoSliderDisplay(mTempo - 32)
+	  setTempoDisplay ( newTempo )
 	}
 	ft.remove(fragment)
 	ft.commit()

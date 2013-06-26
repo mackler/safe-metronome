@@ -53,7 +53,9 @@ class ChopsBuilder(scheduler: akka.actor.Scheduler)(implicit executionContext: E
 
   def formattedTime: String = synchronized {
     if (isOff) throw new IllegalStateException("ChopsBuilder is not on")
-    val timeLeftSeconds = (mMillisecondsLeft / 1000.0).round.toInt
+    val timeLeftMillis = if (isPaused) mMillisecondsLeft
+                         else (mTargetTime - System.currentTimeMillis)
+    val timeLeftSeconds = (timeLeftMillis / 1000.0).round.toInt
     val displayMinutes = timeLeftSeconds / 60
     val displaySeconds = timeLeftSeconds % 60
     s"$displayMinutes:${displaySeconds.formatted("%02d")}"
@@ -76,7 +78,7 @@ class ChopsBuilder(scheduler: akka.actor.Scheduler)(implicit executionContext: E
       val runTime = mTargetTime - mStartTime
       val tempoRange = mTargetTempo - mStartTempo
       val portionCompleted: Float = (System.currentTimeMillis - mStartTime).toFloat / runTime
-      (tempoRange / portionCompleted) + mStartTempo
+      (tempoRange * portionCompleted) + mStartTempo
     }
 
   /* Removes all schedulers and returns time left in milliseconds. */
@@ -95,15 +97,16 @@ class ChopsBuilder(scheduler: akka.actor.Scheduler)(implicit executionContext: E
     mMillisecondsLeft = 0
   }
 
-  def start(startTempo: Int)(completionFunction: => Unit): Boolean = synchronized {
+  def start(startTempo: Int): Boolean = synchronized {
+    logD(s"ChopBuilder's start() called, start $startTempo BPM, target $mTargetTempo BPM; time $mMillisecondsLeft MS")
     if (startTempo < mTargetTempo) {
       mStartTime = System.currentTimeMillis
       mStartTempo = startTempo
       mTargetTime = mStartTime + mMillisecondsLeft
-      mOnCompletion = completionFunction.asInstanceOf[Function0[Unit]]
+      logD(s"starttime $mStartTime, targetTime $mTargetTime")
      if (mChopsCompleter.isDefined) { mChopsCompleter.get.cancel() }
       mChopsCompleter = Option (
-	scheduler.scheduleOnce(mMillisecondsLeft.milliseconds)(wrappedCompletion(completionFunction))
+	scheduler.scheduleOnce(mMillisecondsLeft.milliseconds)(wrappedCompletion(mOnCompletion))
       )
       true
     } else { // start tempo was too fast, cancel, reset, turn off and return false
@@ -111,6 +114,10 @@ class ChopsBuilder(scheduler: akka.actor.Scheduler)(implicit executionContext: E
       mMillisecondsLeft = 0
       false
     }
+  }
+
+  def setCompletionFunction(f: Function0[Unit]) {
+      mOnCompletion = f
   }
 
   /** Wrapped combination of the function the client wants called and the code
