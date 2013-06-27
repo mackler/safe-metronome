@@ -8,9 +8,10 @@ class MainActivity extends Activity with TypedActivity {
 
   private var mTempo = 0
 
-  def setTempoDisplay(newTempo: Int) {
-    setTempoNumberDisplay(newTempo)
-    setTempoSliderDisplay(mTempo)
+  def setTempoDisplay(newTempo: Float) {
+    val tempoInt = newTempo.round
+    setTempoNumberDisplay(tempoInt)
+    setTempoSliderDisplay(tempoInt)
   }
 
   def setTempoNumberDisplay(newTempo: Int) = {

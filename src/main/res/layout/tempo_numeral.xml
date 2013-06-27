@@ -25,7 +25,6 @@
 		android:textSize="48dp"
 		android:gravity="center"
 		android:textStyle="bold"
-		android:text="..."
 		/>
       <TextView
 	  style="@style/FinePrint"
