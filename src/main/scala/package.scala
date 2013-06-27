@@ -34,6 +34,8 @@ package org.mackler {
     type View                       = android.view.View
     val  INVISIBLE                  = android.view.View.INVISIBLE
     val  VISIBLE                    = android.view.View.VISIBLE
+    type OnLongClickListener        = android.view.View.OnLongClickListener
+    type Button                     = android.widget.Button
     type SeekBar                    = android.widget.SeekBar
     type OnSeekBarChangeListener    = android.widget.SeekBar.OnSeekBarChangeListener
 

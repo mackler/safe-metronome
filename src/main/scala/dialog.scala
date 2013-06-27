@@ -1,6 +1,6 @@
 package org.mackler.metronome
 
-class SoundFragment extends DialogFragment {
+class SoundPickerFragment extends DialogFragment {
   override def onCreateDialog(savedInstanceState: Bundle): Dialog = {
     (new AlertDialogBuilder(getActivity())).
     setTitle(R.string.choose_sound).
@@ -8,18 +8,6 @@ class SoundFragment extends DialogFragment {
       def onClick(dialog: DialogInterface, which: Int) {
 	mainActor ! SetSound(which)
       }
-    }).
-    create()
-  }
-}
-
-class AboutFragment extends DialogFragment {
-  override def onCreateDialog(savedInstanceState: Bundle): Dialog = {
-    (new AlertDialogBuilder(getActivity())).
-    setTitle(R.string.app_name).
-    setMessage("By Adam Mackler").
-    setPositiveButton("OK", new DialogOnClickListener() {
-      def onClick(dialog: DialogInterface, which: Int) {}
     }).
     create()
   }
@@ -69,6 +57,18 @@ class StartTempoFragment(max: Int, val countDown: Int) extends DialogFragment {
       def onClick(dialog: DialogInterface, which: Int) {}
     }).
     setView(tempoLayout).
+    create()
+  }
+}
+
+class AboutFragment extends DialogFragment {
+  override def onCreateDialog(savedInstanceState: Bundle): Dialog = {
+    (new AlertDialogBuilder(getActivity())).
+    setTitle(R.string.app_name).
+    setMessage("By Adam Mackler\n\nAdamMackler@gmail.com").
+    setPositiveButton("OK", new DialogOnClickListener() {
+      def onClick(dialog: DialogInterface, which: Int) {}
+    }).
     create()
   }
 }

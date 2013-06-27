@@ -1,79 +1,40 @@
 package org.mackler.metronome
 
 class MainActivity extends Activity with TypedActivity {
-
-//  val pathShape = new android.graphics.drawable.shapes.PathShape(SliderPath, 1, 1)
+  import MainActivity._
 
   private val mHandler = new android.os.Handler
 
   private var mTempo = 0
 
-  def setTempoDisplay(newTempo: Float) {
-    val tempoInt = newTempo.round
-    setTempoNumberDisplay(tempoInt)
-    setTempoSliderDisplay(tempoInt)
-  }
-
-  def setTempoNumberDisplay(newTempo: Int) = {
-    mTempo = if (newTempo < MainActor.MIN_TEMPO) MainActor.MIN_TEMPO
-             else if (newTempo > MainActor.MAX_TEMPO) MainActor.MAX_TEMPO
-             else newTempo
-    findView(TR.tempo).setText(mTempo.toString)
-    findView(TR.marking).setText(marking(mTempo))
-  }
-
-  def setTempoSliderDisplay(tempo: Int) {
-    findViewById(R.id.seek_bar).asInstanceOf[SeekBar].setProgress(tempo - 32)
-  }
-
-  def adjustTempo(delta: Int) {
-    setTempoDisplay(mTempo + delta)
-    mainActor ! SetTempo(mTempo)
-  }
-
   override def onCreate(bundle: Bundle) {
     super.onCreate(bundle)
     setContentView(R.layout.main)
 
-    val onSeekBarChangeListener = new OnSeekBarChangeListener {
+    // seek_bar is of different types between the landscape and portrait orientation
+    findViewById(R.id.seek_bar).asInstanceOf[SeekBar].setOnSeekBarChangeListener(new OnSeekBarChangeListener {
       def onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-	val newTempo = progress + 32
-	setTempoNumberDisplay(newTempo)
-	if (fromUser) mainActor ! SetTempo(mTempo)
+	if (fromUser) {
+	  setTempoNumberDisplay(progress + 32)
+	  mainActor ! SetTempo(mTempo)
+	}
 
       }
       def onStartTrackingTouch(seekBar: SeekBar) {}; def onStopTrackingTouch(seekBar: SeekBar) {}
+    })
+
+    class LongClickAdjustListener(button: TypedResource[Button], amount: Int) extends OnLongClickListener {
+      def onLongClick(v: View) = { mHandler.post(new Runnable { def run {
+	adjustTempo(amount)
+	if (findView(button).isPressed) mHandler.post(this)
+      }})}
     }
-
-    // seek_bar is of different types between the landscape and portrait orientation
-    findViewById(R.id.seek_bar).asInstanceOf[SeekBar].setOnSeekBarChangeListener(onSeekBarChangeListener)
-
-    findView(TR.slower_button).setOnLongClickListener(new android.view.View.OnLongClickListener { def onLongClick(v: View) = {
-      mHandler.post(new LongPressRunnable(false))
-      true
-    }})
-
-    findView(TR.faster_button).setOnLongClickListener(new android.view.View.OnLongClickListener { def onLongClick(v: View) = {
-      mHandler.post(new LongPressRunnable(true))
-      true
-    }})
+			       
+    findView(TR.slower_button).setOnLongClickListener(new LongClickAdjustListener(TR.slower_button, -1))
+    findView(TR.faster_button).setOnLongClickListener(new LongClickAdjustListener(TR.faster_button, 1))
 
     mainActor ! SetUi(this)
   }
-
-  def cancelChops(view: View) {
-    mainActor ! ChopsCancel
-    clearBuilder()
-  }
-
-  private class LongPressRunnable(faster: Boolean) extends Runnable { def run {
-    val (amount, button) = if (faster)
-      (1, findView(TR.faster_button))
-    else
-      (-1, findView(TR.slower_button))
-    adjustTempo(amount)
-    if (button.isPressed) mHandler.post(this)
-  }}
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
     getMenuInflater.inflate(R.menu.main_activity, menu)
@@ -83,7 +44,7 @@ class MainActivity extends Activity with TypedActivity {
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
     item.getItemId match {
       case R.id.preferences ⇒
-        (new SoundFragment).show(getFragmentManager.beginTransaction(), "soundChooser")
+        (new SoundPickerFragment).show(getFragmentManager.beginTransaction(), "soundChooser")
         true
       case R.id.about ⇒
         (new AboutFragment).show(getFragmentManager.beginTransaction(), "about")
@@ -99,32 +60,18 @@ class MainActivity extends Activity with TypedActivity {
     displayStartButton(true)
   }
 
-  def configureChopsBuilder(view: View) { showCountdownDialog() }
-
-  def showCountdownDialog() {
-    (new CountdownFragment).show(getFragmentManager.beginTransaction(), "countdown")
+  def setTempoDisplay(newTempo: Float) {
+    val tempoInt = newTempo.round
+    setTempoNumberDisplay(tempoInt)
+    findViewById(R.id.seek_bar).asInstanceOf[SeekBar].setProgress(tempoInt - 32)
   }
 
-  def displayChopsBuilderData(tempo: Int, time: String) {
-    findView(TR.target_tempo).setText(s"$tempo BPM")
-    findView(TR.time_left).setText(time)
-    findView(TR.chops_display).setVisibility(VISIBLE)
-    findView(TR.chops_button).setVisibility(INVISIBLE)
-  }
-
-  def startChopsBuilder(startTempo: Int, countdownMinutes: Int) {
-    logD(s"activity's startChopsBuilder() called, startTempo $startTempo")
-    displayChopsBuilderData(mTempo, s"$countdownMinutes:00")
-    setTempoDisplay(startTempo)
-    displayStartButton(false)
-    mainActor ! BuildChops(startTempo, countdownMinutes)
-  }
-
-  def showStartDialog(countDown: Int) {
-    val ft = getFragmentManager.beginTransaction
-    val countdownFragment = getFragmentManager.findFragmentByTag("countdown")
-    ft.remove(countdownFragment)
-    (new StartTempoFragment(mTempo-1, countDown)).show(ft, "startTempo")
+  def setTempoNumberDisplay(newTempo: Int) = {
+    mTempo = if (newTempo < MainActor.MIN_TEMPO) MainActor.MIN_TEMPO
+             else if (newTempo > MainActor.MAX_TEMPO) MainActor.MAX_TEMPO
+             else newTempo
+    findView(TR.tempo).setText(mTempo.toString)
+    findView(TR.marking).setText(marking(mTempo))
   }
 
   def toggle(view: View) {
@@ -140,13 +87,9 @@ class MainActivity extends Activity with TypedActivity {
     }
   }
 
-  def clearBuilder() {
-    findView(TR.chops_display).setVisibility(INVISIBLE)
-    findView(TR.chops_button).setVisibility(VISIBLE)
-  }
-
-  def updateCountdown(time: String) {
-    findView(TR.time_left).setText(time)
+  def adjustTempo(delta: Int) {
+    setTempoDisplay(mTempo + delta)
+    mainActor ! SetTempo(mTempo)
   }
 
   private var tapped: Long = 0
@@ -199,6 +142,51 @@ class MainActivity extends Activity with TypedActivity {
   def faster(view: View) { adjustTempo(1) }
   def slower(view: View) { adjustTempo(-1) }
 
+  /* Stuff for ChopsBuilder ChopsBuilder™ */
+
+  def configureChopsBuilder(view: View) { showCountdownDialog() }
+
+  def showCountdownDialog() {
+    (new CountdownFragment).show(getFragmentManager.beginTransaction(), "countdown")
+  }
+
+  def showStartDialog(countDown: Int) {
+    val ft = getFragmentManager.beginTransaction
+    val countdownFragment = getFragmentManager.findFragmentByTag("countdown")
+    ft.remove(countdownFragment)
+    (new StartTempoFragment(mTempo-1, countDown)).show(ft, "startTempo")
+  }
+
+  def startChopsBuilder(startTempo: Int, countdownMinutes: Int) {
+    logD(s"activity's startChopsBuilder() called, startTempo $startTempo")
+    displayChopsBuilderData(mTempo, s"$countdownMinutes:00")
+    setTempoDisplay(startTempo)
+    displayStartButton(false)
+    mainActor ! BuildChops(startTempo, countdownMinutes)
+  }
+
+  def displayChopsBuilderData(tempo: Int, time: String) {
+    findView(TR.target_tempo).setText(s"$tempo BPM")
+    updateCountdown(time)
+    findView(TR.chops_display).setVisibility(VISIBLE)
+    findView(TR.chops_button).setVisibility(INVISIBLE)
+  }
+
+  def updateCountdown(time: String) { findView(TR.time_left).setText(time) }
+
+  def cancelChopsBuilder(view: View) {
+    mainActor ! ChopsCancel
+    clearBuilder()
+  }
+
+  def clearBuilder() {
+    findView(TR.chops_display).setVisibility(INVISIBLE)
+    findView(TR.chops_button).setVisibility(VISIBLE)
+  }
+
+}
+
+object MainActivity {
   private def marking(tempo: Int): String = {
     if (tempo < 40) "Grave"
     else if (tempo < 45) "Lento"
@@ -218,14 +206,4 @@ class MainActivity extends Activity with TypedActivity {
     else if (tempo < 178) "Presto"
     else "Prestissimo"
   }
-
 }
-
-/*
-object SliderPath extends android.graphics.Path {
-  moveTo(0,0)
-  lineTo(100,0)
-  lineTo(90,100)
-  lineTo(10,100)
-  close()
-}*/

@@ -172,7 +172,6 @@ class MainActor extends Actor {
     case ChopsCancel ⇒
       mMillisecondsLeft = 0
       stopTicker()
-      runOnUi { uiOption.get.clearBuilder() }
 
   } // end of receive method
 
