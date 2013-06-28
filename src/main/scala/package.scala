@@ -29,13 +29,16 @@ package org.mackler {
       android.media.AudioTrack.OnPlaybackPositionUpdateListener 
     type Bundle                     = android.os.Bundle
     def  logD(msg: String)          = android.util.Log.d("SafeMetronome", msg)
+    type LayoutInflater             = android.view.LayoutInflater
     type Menu                       = android.view.Menu
     type MenuItem                   = android.view.MenuItem
     type View                       = android.view.View
     val  INVISIBLE                  = android.view.View.INVISIBLE
     val  VISIBLE                    = android.view.View.VISIBLE
     type OnLongClickListener        = android.view.View.OnLongClickListener
+    type ViewGroup                  = android.view.ViewGroup
     type Button                     = android.widget.Button
+    type NumberPicker               = android.widget.NumberPicker
     type SeekBar                    = android.widget.SeekBar
     type OnSeekBarChangeListener    = android.widget.SeekBar.OnSeekBarChangeListener
 

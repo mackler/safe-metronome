@@ -6,19 +6,31 @@ starting tempo when operating the ChopsBuilder™ feature -->
 	      android:layout_height="match_parent"
 	      >
   <NumberPicker android:id="@+id/tempo_picker"
-		android:layout_width="wrap_content"
+		android:layout_width="0dp"
 		android:layout_height="match_parent"
+		android:layout_weight="1"
 		/>
-  <TextView android:id="@+id/dialog_tap_button"
+  <LinearLayout
+      android:layout_width="0dp"
+      android:layout_height="match_parent"
+      android:orientation="vertical"
+	      android:layout_weight="1"
+      >
+    <TextView android:id="@+id/dialog_tap_button"
+	      android:layout_width="match_parent"
+	      android:layout_height="0dp"
+	      android:layout_weight="1"
+	      android:textSize="36sp"
+	      android:text="@string/tap"
+	      android:textAllCaps="true"
+	      android:background="@android:color/holo_orange_light"
+	      android:clickable="true"
+	      android:gravity="center"
+	      />
+    <Button android:id="@+id/start_button"
 	    android:layout_width="match_parent"
-	    android:layout_height="match_parent"
-	    android:layout_weight="1"
-	    android:textSize="36sp"
-	    android:text="@string/tap"
-	    android:textAllCaps="true"
-	    android:background="@android:color/holo_orange_light"
-	    android:clickable="true"
-	    android:gravity="center"
-	    android:onClick="onTap"
+	    android:layout_height="wrap_content"
+	    android:text="@string/start"
 	    />
+  </LinearLayout>
 </LinearLayout>

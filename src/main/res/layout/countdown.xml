@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<NumberPicker xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-/>
+<!-- This layout is displayed for the user to select the minute duration of ChopsBuilder™ -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	      android:layout_width="match_parent"
+	      android:layout_height="match_parent"
+	      android:gravity="center"
+	      >
+  <NumberPicker android:id="@+id/minute_count"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      />
+  <Button android:id="@+id/next_button"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:text="@string/next"
+      />
+</LinearLayout>

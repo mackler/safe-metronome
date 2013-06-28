@@ -114,9 +114,7 @@ class MainActivity extends Activity with TypedActivity {
 	val ft = getFragmentManager.beginTransaction
 	val fragment = getFragmentManager.findFragmentByTag("startTempo")
 	if (newTempo < mTempo) {
-	  startChopsBuilder (
-	    newTempo, fragment.asInstanceOf[StartTempoFragment].countDown
-	  )
+	  startChopsBuilder ( newTempo, fragment.asInstanceOf[StartingTempoDialog].minutes )
 	  setTempoDisplay ( newTempo )
 	}
 	ft.remove(fragment)
@@ -147,23 +145,44 @@ class MainActivity extends Activity with TypedActivity {
   def configureChopsBuilder(view: View) { showCountdownDialog() }
 
   def showCountdownDialog() {
-    (new CountdownFragment).show(getFragmentManager.beginTransaction(), "countdown")
+    val ft = getFragmentManager.beginTransaction
+    ft.addToBackStack("chopsBuilder")
+    val newFragment = CountdownDialog.newInstance(5)
+    newFragment.show(ft,"countdown")
   }
 
-  def showStartDialog(countDown: Int) {
+  def showStartingTempoDialog(countDown: Int) {
     val ft = getFragmentManager.beginTransaction
     val countdownFragment = getFragmentManager.findFragmentByTag("countdown")
-    ft.remove(countdownFragment)
-    (new StartTempoFragment(mTempo-1, countDown)).show(ft, "startTempo")
+    if (countdownFragment != null) ft.remove(countdownFragment)
+    ft.addToBackStack("chopsBuilder")
+    val tempoGuess = (((mTempo - 32) / 2) + 32).round.toInt
+    val newFragment = StartingTempoDialog.newInstance(countDown, tempoGuess)
+    newFragment.show(ft,"startTempo")
   }
 
+  def startChopsBuilder(startTempo: Int, countdownMinutes: Int) {
+    logD(s"activity's startChopsBuilder() called, startTempo $startTempo")
+    val ft = getFragmentManager.beginTransaction
+    val countdownFragment = getFragmentManager.findFragmentByTag("startTempo")
+    ft.remove(countdownFragment)
+    ft.commit()
+    getFragmentManager.popBackStack("chopsBuilder",1)
+
+    displayChopsBuilderData(mTempo, s"$countdownMinutes:00")
+    setTempoDisplay(startTempo)
+    displayStartButton(false)
+    mainActor ! BuildChops(startTempo, countdownMinutes)
+  }
+
+/*
   def startChopsBuilder(startTempo: Int, countdownMinutes: Int) {
     logD(s"activity's startChopsBuilder() called, startTempo $startTempo")
     displayChopsBuilderData(mTempo, s"$countdownMinutes:00")
     setTempoDisplay(startTempo)
     displayStartButton(false)
     mainActor ! BuildChops(startTempo, countdownMinutes)
-  }
+  }*/
 
   def displayChopsBuilderData(tempo: Int, time: String) {
     findView(TR.target_tempo).setText(s"$tempo BPM")
