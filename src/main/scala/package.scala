@@ -39,6 +39,7 @@ package org.mackler {
     type ViewGroup                  = android.view.ViewGroup
     type Button                     = android.widget.Button
     type NumberPicker               = android.widget.NumberPicker
+    type OnValueChangeListener      = android.widget.NumberPicker.OnValueChangeListener
     type SeekBar                    = android.widget.SeekBar
     type OnSeekBarChangeListener    = android.widget.SeekBar.OnSeekBarChangeListener
 

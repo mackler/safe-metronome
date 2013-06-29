@@ -7,9 +7,42 @@ class MainActivity extends Activity with TypedActivity {
 
   private var mTempo = 0
 
+  /** The tempo can be set by tapping.  To do so, this variable will store the
+   * time at which the first tap occurred, in order that it can be subtracted from
+   * the time of the second tap.  The difference is the duration of one beat. */
+  private var mTapped: Long = 0
+  def tapTime: Long = mTapped
+
+  private def acknowledgeFirstTap(view: View) {
+    val timeSinceTap = System.currentTimeMillis - mTapped
+    val delay = (60000/32) - timeSinceTap
+    if (delay > 0) {
+      view.setBackgroundResource(android.R.color.holo_blue_bright)
+      mHandler.postDelayed(new Runnable { def run {
+	mTapped = 0 
+	view.setBackgroundResource(android.R.color.holo_orange_light)
+      }}, delay )
+    }
+  }
+
+  override def onResume() {
+    super.onResume()
+    if (mTapped != 0) {
+      // We have to know whether or not the first tap came from the StartTempoDialog
+      val startTempoFragment = getFragmentManager.findFragmentByTag("startTempo")
+      if (startTempoFragment == null)
+	acknowledgeFirstTap(findView(TR.tap_button))
+      else acknowledgeFirstTap(startTempoFragment.getView.findViewById(R.id.dialog_tap_button))
+    }
+  }
+
   override def onCreate(bundle: Bundle) {
     super.onCreate(bundle)
     setContentView(R.layout.main)
+
+    if (bundle != null) {
+      mTapped = bundle.getLong("tapTime", 0)
+    }
 
     // seek_bar is of different types between the landscape and portrait orientation
     findViewById(R.id.seek_bar).asInstanceOf[SeekBar].setOnSeekBarChangeListener(new OnSeekBarChangeListener {
@@ -53,6 +86,11 @@ class MainActivity extends Activity with TypedActivity {
     }
   }
 
+  override def onSaveInstanceState(outState: Bundle) {
+    super.onSaveInstanceState(outState)
+    outState.putLong("tapTime", mTapped)
+  }
+
   override def onPause() {
     super.onPause()
     mainActor ! SavePreferences(getPreferences(MODE_PRIVATE))
@@ -92,18 +130,13 @@ class MainActivity extends Activity with TypedActivity {
     mainActor ! SetTempo(mTempo)
   }
 
-  private var tapped: Long = 0
   def onTap(view: View) {
-    if (tapped == 0) {
-      tapped = System.currentTimeMillis
-      view.setBackgroundResource(android.R.color.holo_blue_bright)
-      mHandler.postDelayed(new Runnable { def run {
-	tapped = 0 
-	view.setBackgroundResource(android.R.color.holo_orange_light)
-      }}, (60000/32) )
+    if (mTapped == 0) {
+      mTapped = System.currentTimeMillis
+      acknowledgeFirstTap(view)
     } else {
-      val durationInMillis = System.currentTimeMillis - tapped
-      tapped = 0
+      val durationInMillis = System.currentTimeMillis - mTapped
+      mTapped = 0
       val newTempo = (60000.0 / durationInMillis ).round.toInt
       if (view == findView(TR.tap_button)) {
 	setTempoDisplay ( newTempo )
@@ -156,8 +189,9 @@ class MainActivity extends Activity with TypedActivity {
     val countdownFragment = getFragmentManager.findFragmentByTag("countdown")
     if (countdownFragment != null) ft.remove(countdownFragment)
     ft.addToBackStack("chopsBuilder")
+    val maxTempo = mTempo - 1
     val tempoGuess = (((mTempo - 32) / 2) + 32).round.toInt
-    val newFragment = StartingTempoDialog.newInstance(countDown, tempoGuess)
+    val newFragment = StartingTempoDialog.newInstance(countDown, tempoGuess, maxTempo)
     newFragment.show(ft,"startTempo")
   }
 
