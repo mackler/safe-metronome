@@ -52,13 +52,6 @@ class MainActor extends Actor {
     uiOption.get.runOnUiThread(new Runnable { def run { f }})
   }
 
-  private def formattedTime(milliseconds: Int): String = {
-    val timeLeftSeconds = (milliseconds / 1000.0).round.toInt
-    val displayMinutes = timeLeftSeconds / 60
-    val displaySeconds = timeLeftSeconds % 60
-    s"$displayMinutes:${displaySeconds.formatted("%02d")}"
-  }
-
   private def startTicker() {
     if (mChopsTicker.isDefined) mChopsTicker.get.cancel()
     mChopsTicker = Option (
@@ -94,7 +87,7 @@ class MainActor extends Actor {
       runOnUi {
         uiOption.get.setTempoDisplay(mTempo)
 	if (mMillisecondsLeft > 0)
-	  uiOption.get.displayChopsBuilderData(mTargetTempo.round.toInt, formattedTime(mMillisecondsLeft))
+	  uiOption.get.displayChopsBuilderData(mTargetTempo.round.toInt, mMillisecondsLeft)
       }
  
     case Start ⇒ if (mIsPlaying != true ) {
@@ -169,6 +162,8 @@ class MainActor extends Actor {
       startTicker()
       self ! Start
 
+    case SetCountdown(seconds) ⇒ mMillisecondsLeft = seconds * 1000
+
     case ChopsCancel ⇒
       mMillisecondsLeft = 0
       stopTicker()
@@ -178,7 +173,8 @@ class MainActor extends Actor {
 
   /** Called every second while ChopsBuilder™ is running */
   private def chopsTick {
-    runOnUi { uiOption.get.updateCountdown(formattedTime(mMillisecondsLeft)) }
+//    runOnUi { uiOption.get.updateCountdown(formattedTime(mMillisecondsLeft)) }
+    runOnUi { uiOption.get.updateCountdown(mMillisecondsLeft) }
   }
 
   def chopsComplete(tempo: Float) {

@@ -6,6 +6,7 @@ class MainActivity extends Activity with TypedActivity {
   private val mHandler = new android.os.Handler
 
   private var mTempo = 0
+  private var mCountdownSeconds = 0
 
   /** The tempo can be set by tapping.  To do so, this variable will store the
    * time at which the first tap occurred, in order that it can be subtracted from
@@ -157,6 +158,35 @@ class MainActivity extends Activity with TypedActivity {
     }
   }
 
+  def incrementCountdown(view: View) {
+    adjustCountdown(1)
+  }
+
+  def decrementCountdown(view: View) {
+    adjustCountdown(-1)
+  }
+
+  private var mCountdownPattern: Option[Pattern] = None
+  def countdownPattern: Pattern = {
+    if (!mCountdownPattern.isDefined) mCountdownPattern = Option(patternCompile(":"))
+    mCountdownPattern.get
+  }
+
+  private def adjustCountdown(adjustment: Int) {
+/*    val timeLeft = findView(TR.time_left).getText
+    val segments = countdownPattern.split(timeLeft, 2)
+    val minutes = segments(0).toInt */
+    val minutes = mCountdownSeconds / 60
+    val seconds = mCountdownSeconds % 60
+    val newMinutes = minutes + adjustment
+    if (newMinutes < 60 && (newMinutes > 0 || newMinutes == 0 && seconds > 0)) {
+//      val seconds = segments(1).toInt
+      val newSeconds = (newMinutes * 60) + seconds
+      mainActor ! SetCountdown( newSeconds )
+      updateCountdown(newSeconds * 1000)
+    }
+  }
+
   private def displayStartButton(start: Boolean) {
     val button = findView(TR.control_button)
     start match {
@@ -203,29 +233,30 @@ class MainActivity extends Activity with TypedActivity {
     ft.commit()
     getFragmentManager.popBackStack("chopsBuilder",1)
 
-    displayChopsBuilderData(mTempo, s"$countdownMinutes:00")
+    displayChopsBuilderData(mTempo, countdownMinutes*60000)
     setTempoDisplay(startTempo)
     displayStartButton(false)
     mainActor ! BuildChops(startTempo, countdownMinutes)
   }
 
-/*
-  def startChopsBuilder(startTempo: Int, countdownMinutes: Int) {
-    logD(s"activity's startChopsBuilder() called, startTempo $startTempo")
-    displayChopsBuilderData(mTempo, s"$countdownMinutes:00")
-    setTempoDisplay(startTempo)
-    displayStartButton(false)
-    mainActor ! BuildChops(startTempo, countdownMinutes)
-  }*/
-
-  def displayChopsBuilderData(tempo: Int, time: String) {
+  def displayChopsBuilderData(tempo: Int, milliSeconds: Int) {
     findView(TR.target_tempo).setText(s"$tempo BPM")
-    updateCountdown(time)
+    updateCountdown(milliSeconds)
     findView(TR.chops_display).setVisibility(VISIBLE)
     findView(TR.chops_button).setVisibility(INVISIBLE)
   }
 
-  def updateCountdown(time: String) { findView(TR.time_left).setText(time) }
+  private def formattedTime(milliSeconds: Int): String = {
+    val seconds = (milliSeconds/1000).round.toInt
+    val displayMinutes = seconds / 60
+    val displaySeconds = seconds % 60
+    s"$displayMinutes:${displaySeconds.formatted("%02d")}"
+  }
+
+  def updateCountdown(milliSeconds: Int) {
+    mCountdownSeconds = (milliSeconds/1000).round.toInt
+    findView(TR.time_left).setText(formattedTime(milliSeconds))
+  }
 
   def cancelChopsBuilder(view: View) {
     mainActor ! ChopsCancel

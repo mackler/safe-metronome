@@ -18,3 +18,10 @@ coordinates, then this may be the metronome for you.
 
 Compare this app to all the other free metronome apps for Android.  If
 you can find a better one, let me know.
+
+Credits
+-------
+
+- Clave recording by [BoilingSand](http://freesound.org/people/BoilingSand/)
+- Cowbell recording by [Neotone](http://freesound.org/people/Neotone/)
+- Boxing Bell sound by [Benboncan](http://freesound.org/people/Benboncan/)

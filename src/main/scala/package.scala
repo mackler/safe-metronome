@@ -45,6 +45,9 @@ package org.mackler {
 
     type ExecutionContext = scala.concurrent.ExecutionContext
 
+    type Pattern = java.util.regex.Pattern
+    def patternCompile(regex: String) = java.util.regex.Pattern.compile(regex)
+
     lazy val actorSystem = ActorSystem("ActorSystem")
 
     lazy val mainActor: akka.actor.ActorRef =
@@ -59,6 +62,7 @@ package org.mackler {
     case class  SavePreferences(preferences: SharedPreferences)
 
     case class  BuildChops(startTempo: Float, timeInMinutes: Int)
+    case class  SetCountdown(seconds: Int)
     case object ChopsComplete
     case object ChopsCancel
   }
