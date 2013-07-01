@@ -114,17 +114,33 @@ class MainActivity extends Activity with TypedActivity {
   }
 
   def toggle(view: View) {
-    val startString = getString(R.string.start)
-    val stopString = getString(R.string.stop)
-    findView(TR.control_button).getText match {
-      case `startString` ⇒
-        displayStartButton(false)
-        mainActor ! Start
-      case `stopString` ⇒
-        displayStartButton(true)
-        mainActor ! Stop
-    }
+    if (view == findView(TR.control_button)) {
+      val startString = getString(R.string.start)
+      val stopString = getString(R.string.stop)
+      findView(TR.control_button).getText match {
+	case `startString` ⇒ start()
+	case `stopString` ⇒
+          displayStartButton(true)
+	  displayPauseButton(false)
+          mainActor ! Stop
+      }
+    } else start() // was the ChopsBuilder™ unpause button
   }
+
+  def start() {
+    displayStartButton(false)
+    displayPauseButton(true)
+    mainActor ! Start
+  }
+
+  private def displayPauseButton(visible: Boolean) { visible match {
+    case true ⇒
+      findView(TR.chops_pause).setVisibility(VISIBLE)
+      findView(TR.chops_unpause).setVisibility(GONE)
+    case false ⇒
+      findView(TR.chops_pause).setVisibility(GONE)
+      findView(TR.chops_unpause).setVisibility(VISIBLE)
+  }}
 
   def adjustTempo(delta: Int) {
     setTempoDisplay(mTempo + delta)
@@ -158,6 +174,17 @@ class MainActivity extends Activity with TypedActivity {
     }
   }
 
+  def pauseChopsBuilder(view: View) {
+    mainActor ! PauseChopsBuilder
+    findView(TR.chops_pause).setVisibility(GONE)
+    findView(TR.chops_unpause).setVisibility(VISIBLE)
+  }
+
+  def unpauseChopsBuilder(view: View) {
+    displayStartButton(false)
+    mainActor ! Start
+  }
+
   private def currentCountdown: Tuple2[Int,Int] = {
     val timeLeft = findView(TR.time_left).getText
     val segments = countdownPattern.split(timeLeft, 2)
@@ -177,10 +204,9 @@ class MainActivity extends Activity with TypedActivity {
 
   def decrementCountdown(view: View) {
     val (minutes,seconds) = currentCountdown
-    val newMinutes = minutes - 1
-    if (newMinutes > 0 || seconds > 0) {
+    if (minutes > 1 || seconds > 0) {
       mainActor ! DecrementCountdown
-      updateCountdown(newMinutes, seconds)
+      updateCountdown(minutes-1, seconds)
     }
   }
 

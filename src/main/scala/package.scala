@@ -35,6 +35,7 @@ package org.mackler {
     type View                       = android.view.View
     val  INVISIBLE                  = android.view.View.INVISIBLE
     val  VISIBLE                    = android.view.View.VISIBLE
+    val  GONE                       = android.view.View.GONE
     type OnLongClickListener        = android.view.View.OnLongClickListener
     type ViewGroup                  = android.view.ViewGroup
     type Button                     = android.widget.Button
@@ -64,6 +65,7 @@ package org.mackler {
     case class  BuildChops(startTempo: Float, timeInMinutes: Int)
     case object IncrementCountdown
     case object DecrementCountdown
+    case object PauseChopsBuilder
     case object ChopsComplete
     case object ChopsCancel
   }

@@ -8,6 +8,7 @@ class MainActor extends Actor {
 
   var mTempo: Float = 0
   var mIsPlaying: Boolean = false
+  private var mIsPaused = false // refers to ChopsBuilder™
   var mMillisecondsLeft: Int = 0
   var mTargetTempo: Float = 0
 
@@ -90,16 +91,18 @@ class MainActor extends Actor {
 	  uiOption.get.displayChopsBuilderData(mTargetTempo.round.toInt, mMillisecondsLeft)
       }
  
-    case Start ⇒ if (mIsPlaying != true ) {
-      /* not sure why this next line is necessary, but w/o it I hear one
-       * buffer's-worth of the sound sample, as if the first call to write only
-       * writes until the buffer is full, but the rest of the samples in the
-       * loop are lost. */
-      track.write(new Array[Short](bufferSizeInBytes/2), 0, bufferSizeInBytes/2)
+    case Start ⇒
+      mIsPaused = false
       if (mMillisecondsLeft > 0) startTicker()
-      mIsPlaying = true
-      self ! PlayLoop
-    }
+      if (mIsPlaying != true ) {
+        /* not sure why this next line is necessary, but w/o it I hear one
+         * buffer's-worth of the sound sample, as if the first call to write only
+         * writes until the buffer is full, but the rest of the samples in the
+         * loop are lost. */
+        track.write(new Array[Short](bufferSizeInBytes/2), 0, bufferSizeInBytes/2)
+          mIsPlaying = true
+        self ! PlayLoop
+      }
 
     case PlayLoop ⇒
       if (mIsPlaying) {
@@ -109,7 +112,7 @@ class MainActor extends Actor {
 	track.setPlaybackPositionUpdateListener(endListener)
 	if (track.getPlayState != PLAYSTATE_PLAYING) track.play()
 
-	if (mMillisecondsLeft > 0) { // ChopsBuilder™ is on
+	if (mMillisecondsLeft > 0 && !mIsPaused) { // ChopsBuilder™ is on
 	  val millisecondsPerBeat = (samplesPerBeat / 44.1).round.toInt
           mMillisecondsLeft -= millisecondsPerBeat
 	  if (mMillisecondsLeft <= 0) chopsComplete(mTargetTempo)
@@ -126,8 +129,7 @@ class MainActor extends Actor {
 	stopTicker()
       }
  
-    case Stop ⇒
-      mIsPlaying = false
+    case Stop ⇒ mIsPlaying = false
 
     case SetTempo(bpm) ⇒ if (bpm != mTempo) mTempo = bpm
 
@@ -164,7 +166,14 @@ class MainActor extends Actor {
 
     case IncrementCountdown ⇒ mMillisecondsLeft += 60000
 
-    case DecrementCountdown ⇒ mMillisecondsLeft -= 60000
+    case DecrementCountdown ⇒
+      mMillisecondsLeft -= 60000
+      if (mMillisecondsLeft <= 0) chopsComplete(mTargetTempo)
+
+
+    case PauseChopsBuilder ⇒
+      mIsPaused = true
+      stopTicker()
 
     case ChopsCancel ⇒
       mMillisecondsLeft = 0
@@ -175,7 +184,6 @@ class MainActor extends Actor {
 
   /** Called every second while ChopsBuilder™ is running */
   private def chopsTick {
-//    runOnUi { uiOption.get.updateCountdown(formattedTime(mMillisecondsLeft)) }
     runOnUi { uiOption.get.updateCountdown(mMillisecondsLeft) }
   }
 
