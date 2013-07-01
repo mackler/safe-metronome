@@ -162,7 +162,9 @@ class MainActor extends Actor {
       startTicker()
       self ! Start
 
-    case SetCountdown(seconds) ⇒ mMillisecondsLeft = seconds * 1000
+    case IncrementCountdown ⇒ mMillisecondsLeft += 60000
+
+    case DecrementCountdown ⇒ mMillisecondsLeft -= 60000
 
     case ChopsCancel ⇒
       mMillisecondsLeft = 0

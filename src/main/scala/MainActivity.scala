@@ -158,33 +158,40 @@ class MainActivity extends Activity with TypedActivity {
     }
   }
 
+  private def currentCountdown: Tuple2[Int,Int] = {
+    val timeLeft = findView(TR.time_left).getText
+    val segments = countdownPattern.split(timeLeft, 2)
+    val minutes = segments(0).toInt 
+    val seconds = segments(1).toInt
+    (minutes,seconds)
+  }
+
   def incrementCountdown(view: View) {
-    adjustCountdown(1)
+    val (minutes,seconds) = currentCountdown
+    val newMinutes = minutes + 1
+    if (newMinutes < 60) {
+      mainActor ! IncrementCountdown
+      updateCountdown(newMinutes, seconds)
+    }
   }
 
   def decrementCountdown(view: View) {
-    adjustCountdown(-1)
+    val (minutes,seconds) = currentCountdown
+    val newMinutes = minutes - 1
+    if (newMinutes > 0 || seconds > 0) {
+      mainActor ! DecrementCountdown
+      updateCountdown(newMinutes, seconds)
+    }
+  }
+
+  private def updateCountdown(minutes: Int, seconds: Int) {
+    updateCountdown((minutes*60 + seconds) * 1000)
   }
 
   private var mCountdownPattern: Option[Pattern] = None
   def countdownPattern: Pattern = {
     if (!mCountdownPattern.isDefined) mCountdownPattern = Option(patternCompile(":"))
     mCountdownPattern.get
-  }
-
-  private def adjustCountdown(adjustment: Int) {
-/*    val timeLeft = findView(TR.time_left).getText
-    val segments = countdownPattern.split(timeLeft, 2)
-    val minutes = segments(0).toInt */
-    val minutes = mCountdownSeconds / 60
-    val seconds = mCountdownSeconds % 60
-    val newMinutes = minutes + adjustment
-    if (newMinutes < 60 && (newMinutes > 0 || newMinutes == 0 && seconds > 0)) {
-//      val seconds = segments(1).toInt
-      val newSeconds = (newMinutes * 60) + seconds
-      mainActor ! SetCountdown( newSeconds )
-      updateCountdown(newSeconds * 1000)
-    }
   }
 
   private def displayStartButton(start: Boolean) {

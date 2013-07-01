@@ -62,7 +62,8 @@ package org.mackler {
     case class  SavePreferences(preferences: SharedPreferences)
 
     case class  BuildChops(startTempo: Float, timeInMinutes: Int)
-    case class  SetCountdown(seconds: Int)
+    case object IncrementCountdown
+    case object DecrementCountdown
     case object ChopsComplete
     case object ChopsCancel
   }
