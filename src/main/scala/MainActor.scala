@@ -12,8 +12,9 @@ class MainActor extends Actor {
   var mMillisecondsLeft: Int = 0
   var mTargetTempo: Float = 0
 
-  // sound is raw PCM with sample rate 44100, depth 16 bits, mono, single beat @ 32 BPM
-  // ie, 82688 samples per beat (rounded up from 82687.5), file size in 8-bit bytes
+  // sound is raw PCM with sample rate 44100, depth 16 bits, big-endian, mono,
+  // single beat @ 32 BPM, ie, 82688 samples per beat (rounded up from 82687.5)
+  // file size in 8-bit bytes
   final val FILE_SIZE = 165376
   // TODO: find optimal buffer size programmatically
   var bufferSizeInBytes = 0
@@ -23,6 +24,8 @@ class MainActor extends Actor {
   val claveAudio = new Array[Short](FILE_SIZE/2)
   val cowbellAudio = new Array[Short](FILE_SIZE/2)
   var audioData = claveAudio
+
+  val alertActor = context.system.actorOf(Props[AlertActor],"alertActor")
 
   private def track = audioTrackOption.get
 
@@ -68,6 +71,7 @@ class MainActor extends Actor {
 
     case SetUi(activity) ⇒
       uiOption = Option(activity)
+      alertActor ! AlertActor.Load(activity)
       if (mTempo == 0) {
 	/* This is the first time this message has been received since
 	 * construction of this Actor, thus read saved preferences. */
@@ -157,7 +161,6 @@ class MainActor extends Actor {
     /** The ChopsBuilder™ feature */
 
     case BuildChops(startTempo: Float, timeInMinutes: Int) ⇒
-      logD(s"main actor received BuildChops, start $startTempo BPM, $timeInMinutes minutes")
       mTargetTempo = mTempo
       mMillisecondsLeft = (timeInMinutes * 60000)
       mTempo = startTempo
@@ -195,14 +198,12 @@ class MainActor extends Actor {
       uiOption.get.setTempoDisplay(mTempo)
       uiOption.get.clearBuilder()
     }
+    /* ring alert bell */
+    alertActor ! AlertActor.Sound
   }
 
   private def readSound(resources: Resources, source: Int, dest: Array[Short]) {
-    val dataInputStream = new java.io.DataInputStream(resources.openRawResource(source))
-    (0 to ((FILE_SIZE/2)-1)) foreach {
-      dest.update(_, dataInputStream.readShort())
-    }
-    dataInputStream.close()
+    readRawSound( resources, source, dest, (FILE_SIZE/2) )
   }
 }
 

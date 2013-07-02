@@ -128,8 +128,7 @@ class MainActivity extends Activity with TypedActivity {
   }
 
   def start() {
-    displayStartButton(false)
-    displayPauseButton(true)
+    displayPlayingButtons()
     mainActor ! Start
   }
 
@@ -170,7 +169,7 @@ class MainActivity extends Activity with TypedActivity {
 	ft.remove(fragment)
 	ft.commit()
       }
-      displayStartButton(false)
+      displayPlayingButtons()
     }
   }
 
@@ -204,7 +203,7 @@ class MainActivity extends Activity with TypedActivity {
 
   def decrementCountdown(view: View) {
     val (minutes,seconds) = currentCountdown
-    if (minutes > 1 || seconds > 0) {
+    if (minutes > 0) {
       mainActor ! DecrementCountdown
       updateCountdown(minutes-1, seconds)
     }
@@ -218,6 +217,11 @@ class MainActivity extends Activity with TypedActivity {
   def countdownPattern: Pattern = {
     if (!mCountdownPattern.isDefined) mCountdownPattern = Option(patternCompile(":"))
     mCountdownPattern.get
+  }
+
+  private def displayPlayingButtons() {
+      displayStartButton(false)
+      displayPauseButton(true)
   }
 
   private def displayStartButton(start: Boolean) {
@@ -259,7 +263,6 @@ class MainActivity extends Activity with TypedActivity {
   }
 
   def startChopsBuilder(startTempo: Int, countdownMinutes: Int) {
-    logD(s"activity's startChopsBuilder() called, startTempo $startTempo")
     val ft = getFragmentManager.beginTransaction
     val countdownFragment = getFragmentManager.findFragmentByTag("startTempo")
     ft.remove(countdownFragment)
@@ -268,7 +271,7 @@ class MainActivity extends Activity with TypedActivity {
 
     displayChopsBuilderData(mTempo, countdownMinutes*60000)
     setTempoDisplay(startTempo)
-    displayStartButton(false)
+    displayPlayingButtons()
     mainActor ! BuildChops(startTempo, countdownMinutes)
   }
 

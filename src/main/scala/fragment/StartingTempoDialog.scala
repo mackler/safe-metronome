@@ -34,6 +34,7 @@ class StartingTempoDialog extends DialogFragment {
     tempoPicker.setMaxValue(MainActor.MAX_TEMPO)
     tempoPicker.setValue(mStartTempo)
     tempoPicker.setWrapSelectorWheel(false)
+    tempoPicker.setOnLongPressUpdateInterval(30)
 
     val tapButton = tempoLayout.findViewById(R.id.dialog_tap_button).asInstanceOf[View]
     tapButton.setOnClickListener( new android.view.View.OnClickListener {

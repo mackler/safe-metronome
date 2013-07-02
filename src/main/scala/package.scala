@@ -68,5 +68,19 @@ package org.mackler {
     case object PauseChopsBuilder
     case object ChopsComplete
     case object ChopsCancel
+
+    /** @arg resources The android Resources object to use to access the raw sound
+     *  @arg source Resource id of the raw sound file
+     * @arg dest The Array into which to copy the sound data
+     * @arg size The number of sound samples to read */
+    def readRawSound(resources: Resources, source: Int, dest: Array[Short], size: Int) {
+      val dataInputStream = new java.io.DataInputStream(resources.openRawResource(source))
+      (0 to size-1) foreach {
+	dest.update(_, dataInputStream.readShort())
+      }
+      dataInputStream.close()
+    }
+
+
   }
 }
