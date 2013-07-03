@@ -129,7 +129,7 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
  
     case Stop ⇒ mIsPlaying = false
 
-    case SetTempo(bpm) ⇒ if (bpm != mTempo) mTempo = bpm
+    case SetTempo(bpm,timestamp) ⇒ if (bpm != mTempo) mTempo = bpm
 
     case SetSound(sound: Int) ⇒ sound match {
       case 0 ⇒ audioData = claveAudio
@@ -220,6 +220,16 @@ extends akka.dispatch.UnboundedPriorityMailbox (MyComparator)
 import akka.dispatch.Envelope
 object MyComparator extends java.util.Comparator[Envelope] {
   def compare(e1: Envelope, e2: Envelope): Int = {
+
+    // SetTempo messages must be processed in temporal order:
+    e1.message match {
+      case SetTempo(bpm,timestamp1) ⇒ e2.message match {
+	case SetTempo(bpm,timestamp2) ⇒ return (timestamp1 - timestamp2).toInt
+	case _ ⇒
+      }
+      case _ ⇒
+    }
+
     def priorityVal(message: Any) = message match {
       case   Stop               ⇒ -6
       case _:SavePreferences    ⇒ -5

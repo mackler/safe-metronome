@@ -59,7 +59,7 @@ package org.mackler {
     case object Start
     case object Stop
     case object PlayLoop
-    case class  SetTempo(bpm: Float)
+    case class  SetTempo(bpm: Float, timestamp: Long)
     case class  SetSound(sound: Int)
     case class  SavePreferences(preferences: SharedPreferences)
 

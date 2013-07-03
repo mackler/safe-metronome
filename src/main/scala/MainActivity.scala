@@ -51,7 +51,7 @@ class MainActivity extends Activity with TypedActivity {
       def onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
 	if (fromUser) {
 	  setTempoNumberDisplay(progress + 32)
-	  mainActor ! SetTempo(mTempo)
+	  mainActor ! SetTempo(mTempo, System.currentTimeMillis)
 	}
 
       }
@@ -144,7 +144,7 @@ class MainActivity extends Activity with TypedActivity {
 
   def adjustTempo(delta: Int) {
     setTempoDisplay(mTempo + delta)
-    mainActor ! SetTempo(mTempo)
+    mainActor ! SetTempo(mTempo, System.currentTimeMillis)
   }
 
   def onTap(view: View) {
@@ -157,7 +157,7 @@ class MainActivity extends Activity with TypedActivity {
       val newTempo = (60000.0 / durationInMillis ).round.toInt
       if (view == findView(TR.tap_button)) {
 	setTempoDisplay ( newTempo )
-	mainActor ! SetTempo(mTempo)
+	mainActor ! SetTempo(mTempo, System.currentTimeMillis)
 	view.setBackgroundResource(android.R.color.holo_orange_light)
 	mainActor ! Start
       } else {
