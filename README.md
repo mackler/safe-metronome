@@ -27,7 +27,8 @@ difficult passages and make it look easy. ChopsBuilder™ is brought to
 you now for the first time in an Android app, exclusively in **Safe
 Metronome**.
 
-Accept no substitutes demand the genuine ChopsBuilder™, only with **Safe Metronome**.
+Accept no substitutes. Demand the genuine **Safe Metronome** with
+ChopsBuilder™.
 
 Compare **Safe Metronome** to all the other free metronome apps for
 Android.  If you can find a better one, let us know.
