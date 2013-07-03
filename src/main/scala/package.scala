@@ -54,6 +54,7 @@ package org.mackler {
     lazy val mainActor: akka.actor.ActorRef =
       actorSystem.actorOf(Props[MainActor], name = "MainActor")
 
+    /** Akka Messages */
     case class  SetUi(activity: MainActivity)
     case object Start
     case object Stop
@@ -61,6 +62,8 @@ package org.mackler {
     case class  SetTempo(bpm: Float)
     case class  SetSound(sound: Int)
     case class  SavePreferences(preferences: SharedPreferences)
+
+    case object Tick
 
     case class  BuildChops(startTempo: Float, timeInMinutes: Int)
     case object IncrementCountdown

@@ -45,6 +45,7 @@ class MainActivity extends Activity with TypedActivity {
       mTapped = bundle.getLong("tapTime", 0)
     }
 
+    // Can't use the typeed findView() here because the
     // seek_bar is of different types between the landscape and portrait orientation
     findViewById(R.id.seek_bar).asInstanceOf[SeekBar].setOnSeekBarChangeListener(new OnSeekBarChangeListener {
       def onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {

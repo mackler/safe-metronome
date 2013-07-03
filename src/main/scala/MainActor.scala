@@ -2,7 +2,9 @@ package org.mackler.metronome
 
 import scala.concurrent.duration._
 
-class MainActor extends Actor {
+class MainActor extends Actor
+with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSemantics]
+ {
   import MainActor._
   implicit val executionContext = context.system.dispatcher
 
@@ -59,7 +61,8 @@ class MainActor extends Actor {
   private def startTicker() {
     if (mChopsTicker.isDefined) mChopsTicker.get.cancel()
     mChopsTicker = Option (
-      context.system.scheduler.schedule(1.seconds,1.seconds)(chopsTick)
+//      context.system.scheduler.schedule(1.seconds,1.seconds)(chopsTick)
+      context.system.scheduler.schedule(1.seconds, 1.seconds, self, Tick)
     )
   }
   private def stopTicker() {
@@ -68,6 +71,8 @@ class MainActor extends Actor {
   }
 
   def receive = {
+
+    case Tick ⇒ chopsTick()
 
     case SetUi(activity) ⇒
       uiOption = Option(activity)
@@ -95,26 +100,13 @@ class MainActor extends Actor {
 	  uiOption.get.displayChopsBuilderData(mTargetTempo.round.toInt, mMillisecondsLeft)
       }
  
-    case Start ⇒
-      mIsPaused = false
-      if (mMillisecondsLeft > 0) startTicker()
-      if (mIsPlaying != true ) {
-        /* not sure why this next line is necessary, but w/o it I hear one
-         * buffer's-worth of the sound sample, as if the first call to write only
-         * writes until the buffer is full, but the rest of the samples in the
-         * loop are lost. */
-        track.write(new Array[Short](bufferSizeInBytes/2), 0, bufferSizeInBytes/2)
-          mIsPlaying = true
-        self ! PlayLoop
-      }
+    case Start ⇒ startMetronome()
 
     case PlayLoop ⇒
       if (mIsPlaying) {
 	val samplesPerBeat = (2646000 / mTempo).round
-	track.write(audioData, 0, samplesPerBeat)
-	track.setNotificationMarkerPosition (samplesPerBeat-1)
-	track.setPlaybackPositionUpdateListener(endListener)
-	if (track.getPlayState != PLAYSTATE_PLAYING) track.play()
+//	track.setNotificationMarkerPosition (samplesPerBeat-1)
+//	track.setPlaybackPositionUpdateListener(endListener)
 
 	if (mMillisecondsLeft > 0 && !mIsPaused) { // ChopsBuilder™ is on
 	  val millisecondsPerBeat = (samplesPerBeat / 44.1).round.toInt
@@ -127,6 +119,8 @@ class MainActor extends Actor {
 	    runOnUi { uiOption.get.setTempoDisplay(mTempo) }
 	  }
 	}
+	if (track.getPlayState != PLAYSTATE_PLAYING) track.play()
+	track.write(audioData, 0, samplesPerBeat)
 	self ! PlayLoop
       } else {
 	track.stop() // if user stops playing, let loop finish
@@ -164,15 +158,13 @@ class MainActor extends Actor {
       mTargetTempo = mTempo
       mMillisecondsLeft = (timeInMinutes * 60000)
       mTempo = startTempo
-      startTicker()
-      self ! Start
+      startMetronome()
 
     case IncrementCountdown ⇒ mMillisecondsLeft += 60000
 
     case DecrementCountdown ⇒
       mMillisecondsLeft -= 60000
       if (mMillisecondsLeft <= 0) chopsComplete(mTargetTempo)
-
 
     case PauseChopsBuilder ⇒
       mIsPaused = true
@@ -184,9 +176,18 @@ class MainActor extends Actor {
 
   } // end of receive method
 
+  private def startMetronome() {
+    mIsPaused = false
+    if (mMillisecondsLeft > 0) startTicker()
+    if (mIsPlaying != true ) {
+      mIsPlaying = true
+      self ! PlayLoop
+    }
+  }
 
   /** Called every second while ChopsBuilder™ is running */
-  private def chopsTick {
+  private def chopsTick() {
+//    logD("TICK")
     runOnUi { uiOption.get.updateCountdown(mMillisecondsLeft) }
   }
 
@@ -211,4 +212,36 @@ object MainActor {
   // Tempo range is same as Korg KDM-2
   final val MIN_TEMPO = 32
   final val MAX_TEMPO = 252
+}
+
+class PriorityMailbox(settings: akka.actor.ActorSystem.Settings, config: com.typesafe.config.Config)
+extends akka.dispatch.UnboundedPriorityMailbox (MyComparator)
+
+import akka.dispatch.Envelope
+object MyComparator extends java.util.Comparator[Envelope] {
+  def compare(e1: Envelope, e2: Envelope): Int = {
+    def priorityVal(message: Any) = message match {
+      case   Stop               ⇒ -6
+      case _:SavePreferences    ⇒ -5
+      case _:SetUi              ⇒ -4
+      case _:BuildChops         ⇒ -3
+      case _:SetTempo           ⇒ -1
+      case   ChopsCancel        ⇒  0
+      case   IncrementCountdown ⇒  1
+      case   DecrementCountdown ⇒  1
+      case   Tick               ⇒  2
+      case _:SetSound           ⇒  3
+      case   Start              ⇒  4
+      case   PauseChopsBuilder  ⇒  5
+      case   PlayLoop           ⇒  10
+    }
+
+    val result = priorityVal(e1.message) - priorityVal(e2.message)
+    if (result < 0)
+      logD(s"${e1.message.getClass.getSimpleName} > ${e2.message.getClass.getSimpleName}\t${System.currentTimeMillis}")
+    else if (result > 0)
+      logD(s"${e2.message.getClass.getSimpleName} > ${e1.message.getClass.getSimpleName}\t${System.currentTimeMillis}")
+//    else logD(s"${e2.message.getClass.getName} and ${e1.message.getClass.getName} have same priority")
+    result
+  }
 }

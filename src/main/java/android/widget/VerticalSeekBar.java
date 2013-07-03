@@ -55,8 +55,6 @@ public class VerticalSeekBar extends SeekBar {
     }
 
     protected void onDraw(Canvas c) {
-     /* c.rotate(-90);
-        c.translate(-getHeight(), 0); */
         c.rotate(90);
 	c.translate(0, -getWidth());
         super.onDraw(c);
@@ -74,10 +72,8 @@ public class VerticalSeekBar extends SeekBar {
                 myListener.onStartTrackingTouch(this);
             break;
         case MotionEvent.ACTION_MOVE:
-	    // setProgress(getMax() - (int) (getMax() * event.getY() / getHeight()));
             setProgress((int) (getMax() * event.getY() / getHeight()));
             onSizeChanged(getWidth(), getHeight(), 0, 0);
-	    // myListener.onProgressChanged(this, getMax() - (int) (getMax() * event.getY() / getHeight()), true);
             myListener.onProgressChanged(this, (int) (getMax() * event.getY() / getHeight()), true);
             break;
         case MotionEvent.ACTION_UP:
