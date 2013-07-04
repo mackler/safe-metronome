@@ -247,11 +247,11 @@ object MyComparator extends java.util.Comparator[Envelope] {
     }
 
     val result = priorityVal(e1.message) - priorityVal(e2.message)
-    if (result < 0)
+ /*  if (result < 0)
       logD(s"${e1.message.getClass.getSimpleName} > ${e2.message.getClass.getSimpleName}\t${System.currentTimeMillis}")
     else if (result > 0)
       logD(s"${e2.message.getClass.getSimpleName} > ${e1.message.getClass.getSimpleName}\t${System.currentTimeMillis}")
-//    else logD(s"${e2.message.getClass.getName} and ${e1.message.getClass.getName} have same priority")
+    else logD(s"${e2.message.getClass.getName} and ${e1.message.getClass.getName} have same priority") */
     result
   }
 }

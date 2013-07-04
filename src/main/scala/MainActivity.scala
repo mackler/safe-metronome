@@ -118,7 +118,7 @@ class MainActivity extends Activity with TypedActivity {
     if (view == findView(TR.control_button)) {
       val startString = getString(R.string.start)
       val stopString = getString(R.string.stop)
-      findView(TR.control_button).getText match {
+      findView(TR.control_text).getText match {
 	case `startString` ⇒ start()
 	case `stopString` ⇒
           displayStartButton(true)
@@ -227,13 +227,17 @@ class MainActivity extends Activity with TypedActivity {
 
   private def displayStartButton(start: Boolean) {
     val button = findView(TR.control_button)
+    val icon = findView(TR.control_icon)
+    val text = findView(TR.control_text)
     start match {
       case true ⇒
-        button.setText(R.string.start)
+        text.setText(R.string.start)
+        icon.setImageResource(R.drawable.ic_start)
         button.setBackgroundResource(android.R.color.holo_green_light)
 
       case false ⇒
-        button.setText(R.string.stop)
+        text.setText(R.string.stop)
+        icon.setImageResource(R.drawable.ic_stop)
         button.setBackgroundResource(android.R.color.holo_red_dark)
     }
   }

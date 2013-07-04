@@ -44,17 +44,21 @@
       android:layout_height="match_parent"
       android:layout_weight="1"
       >
-    <Button android:id="@+id/control_button"
-	    style="@style/ControlButton"
-	    android:onClick="toggle"
-	    android:text="@string/start"
-	    android:background="@android:color/holo_green_light"
-	    />
-    <TextView android:id="@+id/tap_button"
-	      style="@style/ControlButton"
-	      android:text="@string/tap"
-	      android:background="@android:color/holo_orange_light"
-	      android:onClick="onTap"
-	      />
+
+    <LinearLayout android:id="@+id/control_button"
+		style="@style/ControlButton"
+		android:onClick="toggle"
+		android:background="@android:color/holo_green_light"
+		>
+      <include layout="@layout/toggle_button"/>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/tap_button"
+		  style="@style/ControlButton"
+		  android:onClick="onTap"
+		  android:background="@android:color/holo_orange_light"
+		  >
+      <include layout="@layout/tap_button"/>
+    </LinearLayout>
   </LinearLayout>
 </LinearLayout>

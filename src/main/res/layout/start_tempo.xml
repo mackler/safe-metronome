@@ -14,19 +14,19 @@ starting tempo when operating the ChopsBuilder™ feature -->
       android:layout_width="0dp"
       android:layout_height="match_parent"
       android:orientation="vertical"
-	      android:layout_weight="1"
+      android:layout_weight="1"
       >
-    <TextView android:id="@+id/dialog_tap_button"
-	      android:layout_width="match_parent"
-	      android:layout_height="0dp"
-	      android:layout_weight="1"
-	      android:textSize="36sp"
-	      android:text="@string/tap"
-	      android:textAllCaps="true"
-	      android:background="@android:color/holo_orange_light"
-	      android:clickable="true"
-	      android:gravity="center"
-	      />
+    <LinearLayout android:id="@+id/dialog_tap_button"
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1"
+		android:background="@android:color/holo_orange_light"
+		android:clickable="true"
+		android:gravity="center"
+		android:orientation="vertical"
+		>
+      <include layout="@layout/tap_button"/>
+    </LinearLayout>
     <Button android:id="@+id/start_button"
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"

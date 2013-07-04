@@ -42,4 +42,11 @@ Credits
   - [Paul Tsupikoff](http://stackoverflow.com/users/933761/paul-tsupikoff)
   - [Fatal1ty2787](http://stackoverflow.com/users/1022447/fatal1ty2787)
   - [Ramesh](http://stackoverflow.com/users/874752/ramesh)
-- [Safe Metronome Icon](http://cemagraphics.deviantart.com/art/Clock-Icon-96460050) by [Cem](http://cemagraphics.deviantart.com/)
+- [Launch Icon](http://cemagraphics.deviantart.com/art/Clock-Icon-96460050) by
+  [Cem](http://cemagraphics.deviantart.com/)
+- [Stop Icon](http://commons.wikimedia.org/wiki/File:Stop_hand_nuvola.svg) by
+  [Renesis](http://en.wikipedia.org/wiki/User:Renesis),
+  [Silsor](http://commons.wikimedia.org/wiki/User:Silsor), and
+  [Ed](http://commons.wikimedia.org/wiki/File:Stop_hand_nuvola.svg)
+- [Start Icon](http://commons.wikimedia.org/wiki/File:Start_hand.svg) by Peter Schwarz
+
