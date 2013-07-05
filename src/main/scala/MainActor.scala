@@ -61,7 +61,6 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
   private def startTicker() {
     if (mChopsTicker.isDefined) mChopsTicker.get.cancel()
     mChopsTicker = Option (
-//      context.system.scheduler.schedule(1.seconds,1.seconds)(chopsTick)
       context.system.scheduler.schedule(1.seconds, 1.seconds, self, Tick)
     )
   }
@@ -96,6 +95,7 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
       }
       runOnUi {
         uiOption.get.setTempoDisplay(mTempo)
+	uiOption.get.hideStartingProgress()
 	if (mMillisecondsLeft > 0)
 	  uiOption.get.displayChopsBuilderData(mTargetTempo.round.toInt, mMillisecondsLeft)
       }

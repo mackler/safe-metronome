@@ -128,6 +128,12 @@ class MainActivity extends Activity with TypedActivity {
     } else start() // was the ChopsBuilder™ unpause button
   }
 
+  def setSound(which: Int) { mainActor ! SetSound(which) }
+
+  def hideStartingProgress() {
+    findView(TR.starting_progress).setVisibility(GONE)
+  }
+
   def start() {
     displayPlayingButtons()
     mainActor ! Start

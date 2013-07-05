@@ -6,7 +6,8 @@ class SoundPickerFragment extends DialogFragment {
     setTitle(R.string.choose_sound).
     setItems(R.array.sound_names, new DialogOnClickListener() {
       def onClick(dialog: DialogInterface, which: Int) {
-	mainActor ! SetSound(which)
+	val activity = getActivity.asInstanceOf[MainActivity]
+	activity.runOnUiThread(new Runnable { def run { activity.setSound(which) }})
       }
     }).
     create()
