@@ -3,32 +3,41 @@ package org.mackler.metronome
 class AlertActor extends Actor {
   import AlertActor._
 
-  val boxingbellData = new Array[Short](boxingShorts)
-  var trackOption: Option[AudioTrack] = None
+  var trackOption: Option[AudioTrack]   = None
+  var dataOption:  Option[Array[Short]] = None
+  def track = trackOption.get
+  def data  = dataOption.get
 
   def receive = {
     case Load(context) ⇒
       logD(s"alert actor received Load message")
-      readRawSound(context.getResources, R.raw.boxingbell, boxingbellData, boxingShorts)
+
+      val soundData = new Array[Short](boxingShorts)
+      readRawSound(context.getResources, R.raw.boxingbell, soundData, boxingShorts)
+      dataOption = Option(soundData)
       val bufferSizeInBytes = audioTrackGetMinBufferSize(44100,CHANNEL_OUT_MONO,ENCODING_PCM_16BIT)
-      trackOption = Option(
-        new AudioTrack(3,
-		     44100,
-		     CHANNEL_OUT_MONO,
-		     ENCODING_PCM_16BIT,
-		     bufferSizeInBytes,
-		     android.media.AudioTrack.MODE_STREAM)
-      )
+      trackOption = Option( new AudioTrack(3,
+					   44100,
+					   CHANNEL_OUT_MONO,
+					   ENCODING_PCM_16BIT,
+					   bufferSizeInBytes,
+					   android.media.AudioTrack.MODE_STREAM) )
 
     case Sound ⇒
-      trackOption.get.play()
-      trackOption.get.write(boxingbellData, 0, boxingbellData.size)
-      trackOption.get.setNotificationMarkerPosition (boxingShorts)
-      trackOption.get.setPlaybackPositionUpdateListener(bellResetListener)
+      track.play()
+      track.write(data, 0, data.size)
+      track.setNotificationMarkerPosition(boxingShorts)
+      track.setPlaybackPositionUpdateListener(resetListener)
   }
 
-  object bellResetListener extends OnPlaybackPositionUpdateListener {
-    def onMarkerReached(track: AudioTrack) { track.stop() }
+  object resetListener extends OnPlaybackPositionUpdateListener {
+    def onMarkerReached(track: AudioTrack) {
+      track.stop()
+      track.release()
+      trackOption = None
+      dataOption = None
+      logD("sounding of alert complete")
+    }
     def onPeriodicNotification(track: AudioTrack) {}
   }
 

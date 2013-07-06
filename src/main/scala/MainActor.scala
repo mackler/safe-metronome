@@ -75,7 +75,6 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
 
     case SetUi(activity) ⇒
       uiOption = Option(activity)
-      alertActor ! AlertActor.Load(activity)
       if (mTempo == 0) {
 	/* This is the first time this message has been received since
 	 * construction of this Actor, thus read saved preferences. */
@@ -159,6 +158,7 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
       mMillisecondsLeft = (timeInMinutes * 60000)
       mTempo = startTempo
       startMetronome()
+      alertActor ! AlertActor.Load(uiOption.get)
 
     case IncrementCountdown ⇒ mMillisecondsLeft += 60000
 
@@ -247,11 +247,6 @@ object MyComparator extends java.util.Comparator[Envelope] {
     }
 
     val result = priorityVal(e1.message) - priorityVal(e2.message)
- /*  if (result < 0)
-      logD(s"${e1.message.getClass.getSimpleName} > ${e2.message.getClass.getSimpleName}\t${System.currentTimeMillis}")
-    else if (result > 0)
-      logD(s"${e2.message.getClass.getSimpleName} > ${e1.message.getClass.getSimpleName}\t${System.currentTimeMillis}")
-    else logD(s"${e2.message.getClass.getName} and ${e1.message.getClass.getName} have same priority") */
     result
   }
 }
