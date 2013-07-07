@@ -187,7 +187,7 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
 
   /** Called every second while ChopsBuilder™ is running */
   private def chopsTick() {
-//    logD("TICK")
+    // logD("TICK")
     runOnUi { uiOption.get.updateCountdown(mMillisecondsLeft) }
   }
 

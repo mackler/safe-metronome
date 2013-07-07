@@ -3,7 +3,10 @@
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="set_sound">Sound</string>
+    <string name="ok">Okay</string>
     <string name="about">About</string>
+    <string name="help">Help</string>
+    <string name="feedback">Send Feedback</string>
     <string name="choose_sound">Choose Sound</string>
     <string name="set_countdown">Set Countdown Minutes</string>
     <string name="set_start_tempo">Set Starting Tempo</string>

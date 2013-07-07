@@ -16,6 +16,10 @@ package org.mackler {
     val  MODE_PRIVATE               = android.content.Context.MODE_PRIVATE
     type DialogInterface            = android.content.DialogInterface
     type DialogOnClickListener      = android.content.DialogInterface.OnClickListener
+    type Intent                     = android.content.Intent
+    val  ACTION_SEND                = android.content.Intent.ACTION_SEND
+    val  EXTRA_EMAIL                = android.content.Intent.EXTRA_EMAIL
+    val  EXTRA_SUBJECT              = android.content.Intent.EXTRA_SUBJECT
     type SharedPreferences          = android.content.SharedPreferences
     val  CHANNEL_OUT_MONO           = android.media.AudioFormat.CHANNEL_OUT_MONO
     val  ENCODING_PCM_16BIT         = android.media.AudioFormat.ENCODING_PCM_16BIT

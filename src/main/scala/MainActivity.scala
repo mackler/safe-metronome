@@ -6,7 +6,6 @@ class MainActivity extends Activity with TypedActivity {
   private val mHandler = new android.os.Handler
 
   private var mTempo = 0
-  private var mCountdownSeconds = 0
 
   /** The tempo can be set by tapping.  To do so, this variable will store the
    * time at which the first tap occurred, in order that it can be subtracted from
@@ -80,6 +79,10 @@ class MainActivity extends Activity with TypedActivity {
     item.getItemId match {
       case R.id.preferences ⇒
         (new SoundPickerFragment).show(getFragmentManager.beginTransaction(), "soundChooser")
+        true
+      case R.id.help ⇒
+        val helpIntent = new android.content.Intent(this, classOf[HelpActivity])
+        startActivity(helpIntent)
         true
       case R.id.about ⇒
         (new AboutFragment).show(getFragmentManager.beginTransaction(), "about")
@@ -216,10 +219,6 @@ class MainActivity extends Activity with TypedActivity {
     }
   }
 
-  private def updateCountdown(minutes: Int, seconds: Int) {
-    updateCountdown((minutes*60 + seconds) * 1000)
-  }
-
   private var mCountdownPattern: Option[Pattern] = None
   def countdownPattern: Pattern = {
     if (!mCountdownPattern.isDefined) mCountdownPattern = Option(patternCompile(":"))
@@ -294,15 +293,18 @@ class MainActivity extends Activity with TypedActivity {
   }
 
   private def formattedTime(milliSeconds: Int): String = {
-    val seconds = (milliSeconds/1000).round.toInt
+    val seconds = (milliSeconds/1000) + (if (milliSeconds % 1000 == 0) 0 else 1)
     val displayMinutes = seconds / 60
     val displaySeconds = seconds % 60
     s"$displayMinutes:${displaySeconds.formatted("%02d")}"
   }
 
   def updateCountdown(milliSeconds: Int) {
-    mCountdownSeconds = (milliSeconds/1000).round.toInt
     findView(TR.time_left).setText(formattedTime(milliSeconds))
+  }
+
+  private def updateCountdown(minutes: Int, seconds: Int) {
+    updateCountdown((minutes*60 + seconds) * 1000)
   }
 
   def cancelChopsBuilder(view: View) {
