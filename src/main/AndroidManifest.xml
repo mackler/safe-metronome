@@ -7,13 +7,19 @@
 	android:theme="@android:style/Theme.Holo.Light.DarkActionBar"
         android:debuggable="true"
 	>
-        <activity android:label="@string/app_name" android:name=".MainActivity">
+        <activity
+	    android:name=".MainActivity"
+	    android:launchMode="singleTask"
+	    >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-	<activity android:name=".HelpActivity" />
+	<activity
+	    android:name=".HelpActivity"
+	    android:launchMode="singleTop"
+	    />
     </application>
 
     <uses-sdk android:minSdkVersion="15"/>

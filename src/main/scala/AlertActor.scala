@@ -8,7 +8,16 @@ class AlertActor extends Actor {
   def track = trackOption.get
   def data  = dataOption.get
 
+  private def unloadTrack() {
+    track.release()
+    trackOption = None
+    dataOption = None
+  }
+
   def receive = {
+
+    case UnloadAlert ⇒ unloadTrack()
+
     case Load(context) ⇒
       logD(s"alert actor received Load message")
 
@@ -33,9 +42,7 @@ class AlertActor extends Actor {
   object resetListener extends OnPlaybackPositionUpdateListener {
     def onMarkerReached(track: AudioTrack) {
       track.stop()
-      track.release()
-      trackOption = None
-      dataOption = None
+      unloadTrack()
       logD("sounding of alert complete")
     }
     def onPeriodicNotification(track: AudioTrack) {}

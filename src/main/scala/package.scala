@@ -1,12 +1,25 @@
 package org.mackler {
   package object metronome {
 
+    /* Contents:
+     *
+     * Akka includes
+     * Android includes
+     * Scala includes
+     * Java includes
+     * Akka messages
+     * Global variables and functions
+     */
+
+    /* Akka includes */
+
     type Actor       = akka.actor.Actor
     type ActorRef    = akka.actor.ActorRef
     val  ActorSystem = akka.actor.ActorSystem
     type Cancellable = akka.actor.Cancellable
     val  Props       = akka.actor.Props
-//    val  Scheduler   = akka.actor.Scheduler
+
+    /* Android includes */
 
     type AlertDialogBuilder         = android.app.AlertDialog.Builder
     type Activity                   = android.app.Activity
@@ -48,17 +61,15 @@ package org.mackler {
     type SeekBar                    = android.widget.SeekBar
     type OnSeekBarChangeListener    = android.widget.SeekBar.OnSeekBarChangeListener
 
+    /* Scala includes */
+
     type ExecutionContext = scala.concurrent.ExecutionContext
 
+    /* Java includes */
+
     type Pattern = java.util.regex.Pattern
-    def patternCompile(regex: String) = java.util.regex.Pattern.compile(regex)
 
-    lazy val actorSystem = ActorSystem("ActorSystem")
-
-    lazy val mainActor: akka.actor.ActorRef =
-      actorSystem.actorOf(Props[MainActor], name = "MainActor")
-
-    /** Akka Messages */
+    /* Akka Messages */
     case class  SetUi(activity: MainActivity)
     case object Start
     case object Stop
@@ -67,14 +78,29 @@ package org.mackler {
     case class  SetSound(sound: Int)
     case class  SavePreferences(preferences: SharedPreferences)
 
-    case object Tick
-
     case class  BuildChops(startTempo: Float, timeInMinutes: Int)
+    case object Tick
     case object IncrementCountdown
     case object DecrementCountdown
     case object PauseChopsBuilder
     case object ChopsComplete
     case object ChopsCancel
+    case object UnloadAlert
+
+    /* Global variables and functions */
+
+    def patternCompile(regex: String) = java.util.regex.Pattern.compile(regex)
+
+    lazy val actorSystem = {
+      logD("Starting Akka ActorSystem")
+      val startTime = System.currentTimeMillis
+      val actorSystem = ActorSystem("ActorSystem")
+      logD(s"ActorSystem startup took s{System.currentTimeMillis - startTime} milliseconds")
+      actorSystem
+    }
+
+    lazy val mainActor: akka.actor.ActorRef =
+      actorSystem.actorOf(Props[MainActor], name = "MainActor")
 
     /** @arg resources The android Resources object to use to access the raw sound
      *  @arg source Resource id of the raw sound file

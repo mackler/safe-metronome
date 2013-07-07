@@ -37,14 +37,14 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
 
   override def preStart {
     bufferSizeInBytes = audioTrackGetMinBufferSize(44100,CHANNEL_OUT_MONO,ENCODING_PCM_16BIT)
-    audioTrackOption = Option(
-      new AudioTrack(3,
-		     44100,
-		     CHANNEL_OUT_MONO,
-		     ENCODING_PCM_16BIT,
-		     bufferSizeInBytes,
-		     MODE_STREAM)
-    )
+    audioTrackOption = Option( new AudioTrack(
+      3,
+      44100,
+      CHANNEL_OUT_MONO,
+      ENCODING_PCM_16BIT,
+      bufferSizeInBytes,
+      MODE_STREAM
+    ))
   }
 
   val endListener = new OnPlaybackPositionUpdateListener {
@@ -54,6 +54,7 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
     def onPeriodicNotification(track: AudioTrack) {}
   }
 
+  // TODO: check to make sure there's actually a user interface
   def runOnUi(f: => Unit) {
     uiOption.get.runOnUiThread(new Runnable { def run { f }})
   }
@@ -70,8 +71,6 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
   }
 
   def receive = {
-
-    case Tick ⇒ chopsTick()
 
     case SetUi(activity) ⇒
       uiOption = Option(activity)
@@ -91,6 +90,7 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
 	}
 	mTargetTempo = preferences.getFloat("targetTempo", 0)
 	mMillisecondsLeft = preferences.getInt("timeLeft", 0)
+	if (mMillisecondsLeft > 0) alertActor ! AlertActor.Load(uiOption.get)
       }
       runOnUi {
         uiOption.get.setTempoDisplay(mTempo)
@@ -153,6 +153,8 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
 
     /** The ChopsBuilder™ feature */
 
+    case Tick ⇒ chopsTick()
+
     case BuildChops(startTempo: Float, timeInMinutes: Int) ⇒
       mTargetTempo = mTempo
       mMillisecondsLeft = (timeInMinutes * 60000)
@@ -173,6 +175,7 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
     case ChopsCancel ⇒
       mMillisecondsLeft = 0
       stopTicker()
+      alertActor ! UnloadAlert
 
   } // end of receive method
 
