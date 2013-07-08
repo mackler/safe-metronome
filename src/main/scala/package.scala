@@ -95,7 +95,7 @@ package org.mackler {
       logD("Starting Akka ActorSystem")
       val startTime = System.currentTimeMillis
       val actorSystem = ActorSystem("ActorSystem")
-      logD(s"ActorSystem startup took s{System.currentTimeMillis - startTime} milliseconds")
+      logD(s"ActorSystem startup took ${System.currentTimeMillis - startTime} milliseconds")
       actorSystem
     }
 

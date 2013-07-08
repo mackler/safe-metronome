@@ -12,7 +12,7 @@ class CountdownDialog extends DialogFragment {
   override def onCreateView (
     inflater: LayoutInflater, container: ViewGroup, savedInstanceState: Bundle
   ): View = {
-    this.getDialog.setTitle(getString(R.string.set_countdown))
+    this.getDialog.setTitle("1/2 " + getString(R.string.set_countdown))
 
     val v: View = inflater.inflate(R.layout.countdown, container, false)
     val np: NumberPicker = v.findViewById(R.id.minute_count).asInstanceOf[NumberPicker]
@@ -27,7 +27,7 @@ class CountdownDialog extends DialogFragment {
     val button = v.findViewById(R.id.next_button).asInstanceOf[Button]
     button.setOnClickListener( new android.view.View.OnClickListener {
       def onClick(v: View) {
-	mMinutes = np.getValue
+//	mMinutes = np.getValue
 	getActivity.asInstanceOf[MainActivity].showStartingTempoDialog(mMinutes)
       }
     })

@@ -24,14 +24,15 @@ class StartingTempoDialog extends DialogFragment {
     )
     outState.putInt("maxTempo", mMaxTempo)
   }
+
   override def onCreateView (
     inflater: LayoutInflater, container: ViewGroup, savedInstanceState: Bundle
   ): View = {
-    this.getDialog.setTitle(getString(R.string.set_start_tempo))
+    this.getDialog.setTitle("2/2 " + getString(R.string.set_start_tempo))
     val tempoLayout: View = inflater.inflate(R.layout.start_tempo, container, false)
     val tempoPicker = tempoLayout.findViewById(R.id.tempo_picker).asInstanceOf[NumberPicker]
     tempoPicker.setMinValue(32)
-    tempoPicker.setMaxValue(MainActor.MAX_TEMPO)
+    tempoPicker.setMaxValue(mMaxTempo)
     tempoPicker.setValue(mStartTempo)
     tempoPicker.setWrapSelectorWheel(false)
     tempoPicker.setOnLongPressUpdateInterval(5)
