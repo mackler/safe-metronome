@@ -28,7 +28,7 @@ class StartingTempoDialog extends DialogFragment {
   override def onCreateView (
     inflater: LayoutInflater, container: ViewGroup, savedInstanceState: Bundle
   ): View = {
-    this.getDialog.setTitle("2/2 " + getString(R.string.set_start_tempo))
+    this.getDialog.setTitle(getString(R.string.set_start_tempo))
     val tempoLayout: View = inflater.inflate(R.layout.start_tempo, container, false)
     val tempoPicker = tempoLayout.findViewById(R.id.tempo_picker).asInstanceOf[NumberPicker]
     tempoPicker.setMinValue(32)

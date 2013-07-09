@@ -99,7 +99,7 @@ class MainActivity extends Activity with TypedActivity {
   override def onPause() {
     super.onPause()
     mainActor ! SavePreferences(getPreferences(MODE_PRIVATE))
-    mainActor ! Stop
+    mainActor ! Stop(System.currentTimeMillis)
     displayStartButton(true)
   }
 
@@ -126,7 +126,7 @@ class MainActivity extends Activity with TypedActivity {
 	case `stopString` ⇒
           displayStartButton(true)
 	  displayPauseButton(false)
-          mainActor ! Stop
+          mainActor ! Stop(System.currentTimeMillis)
       }
     } else start() // was the ChopsBuilder™ unpause button
   }
@@ -139,7 +139,7 @@ class MainActivity extends Activity with TypedActivity {
 
   def start() {
     displayPlayingButtons()
-    mainActor ! Start
+    mainActor ! Start(System.currentTimeMillis)
   }
 
   private def displayPauseButton(visible: Boolean) { visible match {
@@ -168,7 +168,7 @@ class MainActivity extends Activity with TypedActivity {
 	setTempoDisplay ( newTempo )
 	mainActor ! SetTempo(mTempo, System.currentTimeMillis)
 	view.setBackgroundResource(android.R.color.holo_orange_light)
-	mainActor ! Start
+	mainActor ! Start(System.currentTimeMillis)
       } else {
 	val ft = getFragmentManager.beginTransaction
 	val fragment = getFragmentManager.findFragmentByTag("startTempo")
@@ -191,7 +191,7 @@ class MainActivity extends Activity with TypedActivity {
 
   def unpauseChopsBuilder(view: View) {
     displayStartButton(false)
-    mainActor ! Start
+    mainActor ! Start(System.currentTimeMillis)
   }
 
   private def currentCountdown: Tuple2[Int,Int] = {

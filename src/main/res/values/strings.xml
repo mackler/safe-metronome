@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Safe Metronome</string>
-    <string name="start">Start ></string>
+    <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="set_sound">Sound</string>
     <string name="ok">Okay</string>
@@ -10,7 +10,7 @@
     <string name="choose_sound">Choose Sound</string>
     <string name="set_countdown">Set Countdown Minutes</string>
     <string name="set_start_tempo">Set Starting Tempo</string>
-    <string name="next">Next ></string>
+    <string name="next">Next</string>
     <string name="cancel">Cancel</string>
     <string name="back">Back</string>
     <string name="target_tempo">Target: </string>

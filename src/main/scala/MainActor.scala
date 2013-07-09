@@ -49,7 +49,7 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
 
   val endListener = new OnPlaybackPositionUpdateListener {
     def onMarkerReached(track: AudioTrack) {
-      // TODO: give visual beat indication
+      // TODO add visual beat indicator
     }
     def onPeriodicNotification(track: AudioTrack) {}
   }
@@ -99,12 +99,12 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
 	  uiOption.get.displayChopsBuilderData(mTargetTempo.round.toInt, mMillisecondsLeft)
       }
  
-    case Start ⇒ startMetronome()
+    case Start(_) ⇒ startMetronome()
 
     case PlayLoop ⇒
       if (mIsPlaying) {
 	val samplesPerBeat = (2646000 / mTempo).round
-//	track.setNotificationMarkerPosition (samplesPerBeat-1)
+//	track.setNotificationMarkerPosition (samplesPerBeat)
 //	track.setPlaybackPositionUpdateListener(endListener)
 
 	if (mMillisecondsLeft > 0 && !mIsPaused) { // ChopsBuilder™ is on
@@ -126,7 +126,7 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
 	stopTicker()
       }
  
-    case Stop ⇒ mIsPlaying = false
+    case Stop(_) ⇒ mIsPlaying = false
 
     case SetTempo(bpm,timestamp) ⇒ if (bpm != mTempo) mTempo = bpm
 
@@ -188,14 +188,12 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
     }
   }
 
-  /** Called every second while ChopsBuilder™ is running */
+  /** Called every second (allegedly) while ChopsBuilder™ is running */
   private def chopsTick() {
-    // logD("TICK")
     runOnUi { uiOption.get.updateCountdown(mMillisecondsLeft) }
   }
 
   def chopsComplete(tempo: Float) {
-    logD(s"ChopsBuilder™ complete, reached target of ${tempo.round} BPM")
     stopTicker()
     mTempo = tempo
     runOnUi {
@@ -233,8 +231,21 @@ object MyComparator extends java.util.Comparator[Envelope] {
       case _ ⇒
     }
 
+    e1.message match {
+      case Start(timestamp1) ⇒ e2.message match {
+	case Stop(timestamp2) ⇒ return (timestamp1 - timestamp2).toInt
+	case _ ⇒
+      }
+      case Stop(timestamp1) ⇒ e2.message match {
+	case Start(timestamp2) ⇒ return (timestamp1 - timestamp2).toInt
+	case _ ⇒
+      }
+      case _ ⇒
+    }
+
     def priorityVal(message: Any) = message match {
-      case   Stop               ⇒ -6
+      case _:Stop               ⇒ -6
+      case _:Start              ⇒ -6
       case _:SavePreferences    ⇒ -5
       case _:SetUi              ⇒ -4
       case _:BuildChops         ⇒ -3
@@ -244,7 +255,6 @@ object MyComparator extends java.util.Comparator[Envelope] {
       case   DecrementCountdown ⇒  1
       case   Tick               ⇒  2
       case _:SetSound           ⇒  3
-      case   Start              ⇒  4
       case   PauseChopsBuilder  ⇒  5
       case   PlayLoop           ⇒  10
     }

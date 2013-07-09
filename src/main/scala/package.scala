@@ -71,8 +71,8 @@ package org.mackler {
 
     /* Akka Messages */
     case class  SetUi(activity: MainActivity)
-    case object Start
-    case object Stop
+    case class  Start(timestamp: Long)
+    case class  Stop(timestamp: Long)
     case object PlayLoop
     case class  SetTempo(bpm: Float, timestamp: Long)
     case class  SetSound(sound: Int)
