@@ -1,6 +1,8 @@
 package org.mackler {
   package object metronome {
 
+    final val DEVELOPMENT_MODE = true
+
     /* Contents:
      *
      * Akka includes

@@ -15,17 +15,16 @@
     <RelativeLayout android:layout_width="wrap_content"	android:layout_height="wrap_content">
       <TextView android:id="@+id/marking"
 		android:singleLine="true"
-		style="@style/FinePrint"
+		style="@style/FinePrint.Sized"
 		android:layout_alignParentTop="true"
 		/>
       <TextView android:id="@+id/tempo"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_alignParentTop="true"
-		android:paddingTop="6dp"
-		android:textSize="48dp"
 		android:gravity="center"
 		android:textStyle="bold"
+		android:singleLine="true"
+		style="@style/Tempo"
 		/>
       <ProgressBar android:id="@+id/starting_progress"
 		android:layout_width="match_parent"
@@ -34,8 +33,9 @@
 		android:layout_below="@id/marking"
 		/>
       <TextView
-	  style="@style/FinePrint"
+	  style="@style/FinePrint.Sized"
 	  android:text="Adam Mackler"
+	  android:singleLine="false"
 	  android:paddingTop="40dp"
 	  android:layout_below="@id/marking"
 	  />

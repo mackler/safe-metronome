@@ -38,6 +38,18 @@ class MainActivity extends Activity with TypedActivity {
 
   override def onCreate(bundle: Bundle) {
     super.onCreate(bundle)
+
+    if (DEVELOPMENT_MODE ) {
+      val display = getWindowManager.getDefaultDisplay
+      val outMetrics = new android.util.DisplayMetrics
+      display.getMetrics(outMetrics)
+
+      val density  = getResources.getDisplayMetrics.density
+      val dpHeight = outMetrics.heightPixels / density
+      val dpWidth  = outMetrics.widthPixels / density
+      logD(s"density: $density; dpHeight: $dpHeight; dpWidth: $dpWidth")
+    }
+
     setContentView(R.layout.main)
 
     if (bundle != null) {

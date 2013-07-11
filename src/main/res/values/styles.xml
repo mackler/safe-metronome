@@ -28,10 +28,19 @@
     <item name="android:layout_width">wrap_content</item>
     <item name="android:layout_height">wrap_content</item>
     <item name="android:textAllCaps">true</item>
-    <item name="android:textSize">36dp</item>
+    <item name="android:textSize">36sp</item>
     <item name="android:paddingLeft">10dp</item>
   </style>
 
+  <style name="Slider">
+    <item name="android:paddingTop">5dp</item>
+    <item name="android:paddingRight">16dp</item>
+    <item name="android:paddingBottom">5dp</item>
+    <item name="android:paddingLeft">16dp</item>
+    <item name="android:max">220</item>
+    <item name="android:progressDrawable">@android:color/holo_orange_dark</item>
+    <item name="android:thumb">@drawable/slider</item>
+  </style>
 
   <!-- The following from http://www.jagsaund.com/blog/2011/11/25/vertical-progress-bar-for-android.html -->
   <style name="Widget">

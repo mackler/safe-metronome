@@ -31,10 +31,7 @@
   <SeekBar android:id="@+id/seek_bar"
 	   android:layout_width="match_parent"
 	   android:layout_height="wrap_content"
-	   android:padding="8dp"
-	   android:thumb="@drawable/slider"
-	   android:progressDrawable="@android:color/holo_orange_dark"
-	   android:max="220"
+	   style="@style/Slider"
 	   />
 
   <!-- The two big buttons at the bottom of the screen, start/stop and

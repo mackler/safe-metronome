@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+  <style name="ControlText.Sized">
+    <item name="android:textSize">24sp</item>
+    <item name="android:paddingLeft">5dp</item>
+  </style>
+
+  <style name="Tempo">
+    <item name="android:textSize">42dp</item>
+    <item name="android:paddingTop">6dp</item>
+  </style>
+
+  <style name="FinePrint.Sized">
+    <item name="android:visibility">gone</item>
+  </style>
+
+</resources>

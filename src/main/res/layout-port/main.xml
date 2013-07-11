@@ -29,7 +29,6 @@
 		style="@style/ControlButton"
 		android:onClick="toggle"
 		android:background="@android:color/holo_green_light"
-		android:orientation="vertical"
 		>
       <include layout="@layout/toggle_button"/>
     </LinearLayout>
@@ -38,7 +37,6 @@
 		  style="@style/ControlButton"
 		  android:onClick="onTap"
 		  android:background="@android:color/holo_orange_light"
-		  android:orientation="vertical"
 		  >
       <include layout="@layout/tap_button"/>
     </LinearLayout>
@@ -46,12 +44,9 @@
   </LinearLayout>
 
   <android.widget.VerticalSeekBar android:id="@+id/seek_bar"
-	   android:layout_width="wrap_content"
-	   android:layout_height="match_parent"
-	   android:padding="8dp"
-	   android:thumb="@drawable/slider"
-	   android:progressDrawable="@android:color/holo_orange_dark"
-	   android:max="220"
-	   />
+				  android:layout_width="wrap_content"
+				  android:layout_height="match_parent"
+				  style="@style/Slider"
+				  />
 
 </LinearLayout>
