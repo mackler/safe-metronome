@@ -39,9 +39,9 @@ Credits
 - Cowbell recording by [Neotone](http://freesound.org/people/Neotone/)
 - Boxing Bell sound by [Benboncan](http://freesound.org/people/Benboncan/)
 - [VerticalSeekBar](http://stackoverflow.com/questions/4892179/how-can-i-get-a-working-vertical-seekbar-in-android/7966499#7966499) by
-  - [Paul Tsupikoff](http://stackoverflow.com/users/933761/paul-tsupikoff)
-  - [Fatal1ty2787](http://stackoverflow.com/users/1022447/fatal1ty2787)
-  - [Ramesh](http://stackoverflow.com/users/874752/ramesh)
+  [Paul Tsupikoff](http://stackoverflow.com/users/933761/paul-tsupikoff),
+  [Fatal1ty2787](http://stackoverflow.com/users/1022447/fatal1ty2787) and
+  [Ramesh](http://stackoverflow.com/users/874752/ramesh)
 - [Launch Icon](http://cemagraphics.deviantart.com/art/Clock-Icon-96460050) by
   [Cem](http://cemagraphics.deviantart.com/)
 - [Stop Icon](http://commons.wikimedia.org/wiki/File:Stop_hand_nuvola.svg) by
@@ -49,4 +49,5 @@ Credits
   [Silsor](http://commons.wikimedia.org/wiki/User:Silsor), and
   [Ed](http://commons.wikimedia.org/wiki/File:Stop_hand_nuvola.svg)
 - [Start Icon](http://commons.wikimedia.org/wiki/File:Start_hand.svg) by Peter Schwarz
-
+- Tap icon derived from [a work uploaded to the Open Clipart Library by
+  Nathan Eady](http://openclipart.org/detail/89947/pointing-finger-01-by-anonymous)
