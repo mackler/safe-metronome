@@ -1,7 +1,7 @@
 package org.mackler {
   package object metronome {
 
-    final val DEVELOPMENT_MODE = true
+    final val DEVELOPMENT_MODE = false
 
     /* Contents:
      *
@@ -48,7 +48,7 @@ package org.mackler {
     type OnPlaybackPositionUpdateListener =
       android.media.AudioTrack.OnPlaybackPositionUpdateListener 
     type Bundle                     = android.os.Bundle
-    def  logD(msg: String)          = android.util.Log.d("SafeMetronome", msg)
+    def  logD(msg: String)          = if (DEVELOPMENT_MODE) android.util.Log.d("SafeMetronome", msg)
     type LayoutInflater             = android.view.LayoutInflater
     type Menu                       = android.view.Menu
     type MenuItem                   = android.view.MenuItem

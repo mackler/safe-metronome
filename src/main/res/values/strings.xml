@@ -2,7 +2,7 @@
     <string name="app_name">Safe Metronome</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
-    <string name="set_sound">Sound</string>
+    <string name="set_sound">Beat Sound</string>
     <string name="ok">Okay</string>
     <string name="about">About</string>
     <string name="help">Help</string>

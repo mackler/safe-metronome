@@ -4,9 +4,11 @@ class AboutFragment extends DialogFragment {
   import AboutFragment._
 
   override def onCreateDialog(savedInstanceState: Bundle): Dialog = {
-    (new AlertDialogBuilder(getActivity())).
+    val activity = getActivity
+    val version = getActivity.getPackageManager.getPackageInfo("org.mackler.metronome",0).versionName
+    (new AlertDialogBuilder(activity)).
     setTitle(R.string.app_name).
-    setMessage(content).
+    setMessage(s"version $version\n" + content).
     setNeutralButton(R.string.feedback, new DialogOnClickListener() {
       def onClick(dialog: DialogInterface, which: Int) {
 	val intent = new Intent(ACTION_SEND)
@@ -29,18 +31,17 @@ class AboutFragment extends DialogFragment {
 }
 
 object AboutFragment {
-  val content = """|version 0.1.0
-                   |By Adam Mackler
+  val content = """|By Adam Mackler
                    |
                    |Credits:
                    |Clave by BoilingSand
                    |Cowbell by Neotone
                    |Boxing bell by Benboncan
-                   |Launch icon by Cem / cemagraphics
+                   |"Candy Clock" graphic by Cem
                    |Start icon by Peter Schwarz
                    |Stop icon by Renesis, Silsor & Ed
                    |Tap icon courtesy Nathan Eady
                    |Vertical seek bar coded by Paul Tsupikoff, Fatal1ty2787 & Ramesh
                    |
-                   |For contributor contact info, see source repository README.""".stripMargin
+                   |For contributor details, see source repository README.""".stripMargin
 }

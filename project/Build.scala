@@ -6,8 +6,8 @@ import sbtandroid.AndroidKeys._
 object General {
   val settings = Defaults.defaultSettings ++ Seq (
     name := "SafeMetronome",
-    version := "0.1",
-    versionCode := 0,
+    version := "0.1.0",
+    versionCode := 1,
     scalaVersion := "2.10.2",
     platformName in Android := "android-15",
     scalacOptions in Compile ++= Seq("-deprecation","-feature","-language:implicitConversions","-unchecked"),
@@ -30,11 +30,10 @@ object General {
     proguardSettings ++
     sbtandroid.AndroidManifestGenerator.settings ++
     sbtandroid.AndroidMarketPublish.settings ++ Seq (
-      keyalias in Android := "change-me",
+      keyalias in Android := "googleplay",
       libraryDependencies ++= Seq(
         "com.typesafe.akka" % "akka-actor_2.10" % "2.2.0"
-//        "org.scalatest" %% "scalatest"     % "2.0.M6-SNAP21" % "test",
-//        "org.slf4j"      % "slf4j-android" % "1.6.1-RC1"
+//      ,"org.scalatest" %% "scalatest"     % "2.0.M6-SNAP21" % "test"
       )
     )
 }
