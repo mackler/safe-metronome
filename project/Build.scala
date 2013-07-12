@@ -32,7 +32,7 @@ object General {
     sbtandroid.AndroidMarketPublish.settings ++ Seq (
       keyalias in Android := "change-me",
       libraryDependencies ++= Seq(
-        "com.typesafe.akka" % "akka-actor_2.10" % "2.2.0-RC1"
+        "com.typesafe.akka" % "akka-actor_2.10" % "2.2.0"
 //        "org.scalatest" %% "scalatest"     % "2.0.M6-SNAP21" % "test",
 //        "org.slf4j"      % "slf4j-android" % "1.6.1-RC1"
       )

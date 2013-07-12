@@ -33,6 +33,7 @@ package org.mackler {
     type DialogOnClickListener      = android.content.DialogInterface.OnClickListener
     type Intent                     = android.content.Intent
     val  ACTION_SEND                = android.content.Intent.ACTION_SEND
+    val  ACTION_VIEW                = android.content.Intent.ACTION_VIEW
     val  EXTRA_EMAIL                = android.content.Intent.EXTRA_EMAIL
     val  EXTRA_SUBJECT              = android.content.Intent.EXTRA_SUBJECT
     type SharedPreferences          = android.content.SharedPreferences

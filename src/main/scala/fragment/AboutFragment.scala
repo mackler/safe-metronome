@@ -16,14 +16,31 @@ class AboutFragment extends DialogFragment {
 	startActivity(android.content.Intent.createChooser(intent,"Sending Feedback by Email"))
       }
     }).
-    setPositiveButton(R.string.ok, new DialogOnClickListener() {
-      def onClick(dialog: DialogInterface, which: Int) {}
+    setPositiveButton(R.string.sources, new DialogOnClickListener() {
+      def onClick(dialog: DialogInterface, which: Int) { startActivity (
+	new Intent(ACTION_VIEW, android.net.Uri.parse("https://bitbucket.org/mackler/safe-metronome"))
+      ) }
     }).
+//    setPositiveButton(R.string.ok, new DialogOnClickListener() {
+//      def onClick(dialog: DialogInterface, which: Int) {}
+//    }).
     create()
   }
 }
 
 object AboutFragment {
-  val content = """|By Adam Mackler
-                   |AdamMackler@gmail.com""".stripMargin
+  val content = """|version 0.1.0
+                   |By Adam Mackler
+                   |
+                   |Credits:
+                   |Clave by BoilingSand
+                   |Cowbell by Neotone
+                   |Boxing bell by Benboncan
+                   |Launch icon by Cem / cemagraphics
+                   |Start icon by Peter Schwarz
+                   |Stop icon by Renesis, Silsor & Ed
+                   |Tap icon courtesy Nathan Eady
+                   |Vertical seek bar coded by Paul Tsupikoff, Fatal1ty2787 & Ramesh
+                   |
+                   |For contributor contact info, see source repository README.""".stripMargin
 }
