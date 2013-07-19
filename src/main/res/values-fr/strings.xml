@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="start">Commencez</string>
+    <string name="stop">Arrêtez</string>
+    <string name="set_sound">Son du rythme</string>
+    <string name="about">Au sujet</string>
+    <string name="help">Aide</string>
+    <string name="feedback">Envoyer commentaires</string>
+    <string name="sources">Code source</string>
+    <string name="choose_sound">Choisissez le son</string>
+    <string name="set_countdown">Compte à rebours minutes</string>
+    <string name="set_start_tempo">Le tempo de départ</string>
+    <string name="next">Suivante</string>
+    <string name="target_tempo">Objectif:</string>
+    <string name="tap">Appuyez</string>
+</resources>

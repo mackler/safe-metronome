@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="start">Начать</string>
+    <string name="stop">Перестаньте</string>
+    <string name="set_sound">звук ритма</string>
+    <string name="about">о</string>
+    <string name="help">помощь</string>
+    <string name="feedback">обратную связь</string>
+    <string name="sources">исходный код</string>
+    <string name="choose_sound">Выбор звука</string>
+    <string name="set_countdown">отсчет в считанные минуты</string>
+    <string name="set_start_tempo">исходный темп</string>
+    <string name="next">следующему</string>
+    <string name="target_tempo">цель:</string>
+    <string name="tap">Нажмите</string>
+</resources>

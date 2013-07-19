@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="start">Uruchomić</string>
+    <string name="stop">Przerwać</string>
+    <string name="set_sound">Uderzenie Brzmienie</string>
+    <string name="about">Dookoła</string>
+    <string name="help">Wsparcie</string>
+    <string name="feedback">Sprzężenie Zwrotne</string>
+    <string name="sources">Kod źródłowy</string>
+    <string name="choose_sound">Wybrać Dźwięk</string>
+    <string name="set_countdown">Ustaw minuty odliczania</string>
+    <string name="set_start_tempo">Ustaw tempo startowego</string>
+    <string name="next">Następny</string>
+    <string name="target_tempo">Cel: </string>
+    <string name="tap">Dotknij</string>
+</resources>

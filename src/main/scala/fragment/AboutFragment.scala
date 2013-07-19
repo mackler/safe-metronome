@@ -23,9 +23,6 @@ class AboutFragment extends DialogFragment {
 	new Intent(ACTION_VIEW, android.net.Uri.parse("https://bitbucket.org/mackler/safe-metronome"))
       ) }
     }).
-//    setPositiveButton(R.string.ok, new DialogOnClickListener() {
-//      def onClick(dialog: DialogInterface, which: Int) {}
-//    }).
     create()
   }
 }

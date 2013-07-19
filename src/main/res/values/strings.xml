@@ -1,9 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Safe Metronome</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="set_sound">Beat Sound</string>
-    <string name="ok">Okay</string>
     <string name="about">About</string>
     <string name="help">Help</string>
     <string name="feedback">Send Feedback</string>
@@ -12,14 +12,10 @@
     <string name="set_countdown">Set Countdown Minutes</string>
     <string name="set_start_tempo">Set Starting Tempo</string>
     <string name="next">Next</string>
-    <string name="cancel">Cancel</string>
-    <string name="back">Back</string>
     <string name="target_tempo">Target: </string>
-    <string name="remaining_time">Time Left: </string>
     <string name="tap">Tap</string>
     <string-array name="sound_names">
       <item>Clave</item>
       <item>Cow Bell</item>
     </string-array>
-    
 </resources>
