@@ -11,6 +11,6 @@
     <string name="set_countdown">адлік часу ў хвілінах</string>
     <string name="set_start_tempo">Ўсталяваць зваротны адлік хвілін</string>
     <string name="next">наступнай</string>
-    <string name="target_tempo">Мэтавай тэмп: </string>
+    <string name="target_tempo">Мэтавай тэмп</string>
     <string name="tap">Націсніце на</string>
 </resources>

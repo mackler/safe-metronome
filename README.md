@@ -11,8 +11,8 @@ Consider **Safe Metronome**, by Adam Mackler:
 - Uses no special permissions
 - Is free with no ads
 - Works in portrait or landscape rotation
+- Supports languages: Español, Français, Italiano, Polski, Português, беларуская, ру́сский
 - Comes with two natural sounds (clave or cowbell)
-- Supports languages: Español, Français, Polski, Português, беларуская, ру́сский
 
 _But wait...there's more!_  **Safe Metronome** is the only metronome with ChopsBuilder™.
 

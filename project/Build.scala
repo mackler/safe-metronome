@@ -6,8 +6,8 @@ import sbtandroid.AndroidKeys._
 object General {
   val settings = Defaults.defaultSettings ++ Seq (
     name := "SafeMetronome",
-    version := "0.1.0-1",
-    versionCode := 2,
+    version := "0.1.0-2",
+    versionCode := 3,
     scalaVersion := "2.10.2",
     platformName in Android := "android-15",
     scalacOptions in Compile ++= Seq("-deprecation","-feature","-language:implicitConversions","-unchecked"),

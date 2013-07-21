@@ -11,6 +11,6 @@
     <string name="set_countdown">Contagem regressiva minutos</string>
     <string name="set_start_tempo">Tempo inicial</string>
     <string name="next">Próxima</string>
-    <string name="target_tempo">Objetivo:</string>
+    <string name="target_tempo">Objetivo</string>
     <string name="tap">Toque</string>
 </resources>

@@ -11,6 +11,6 @@
     <string name="set_countdown">Ustaw minuty odliczania</string>
     <string name="set_start_tempo">Ustaw tempo startowego</string>
     <string name="next">Następny</string>
-    <string name="target_tempo">Cel: </string>
+    <string name="target_tempo">Cel</string>
     <string name="tap">Dotknij</string>
 </resources>

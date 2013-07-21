@@ -11,6 +11,6 @@
     <string name="set_countdown">Compte à rebours minutes</string>
     <string name="set_start_tempo">Le tempo de départ</string>
     <string name="next">Suivante</string>
-    <string name="target_tempo">Objectif:</string>
+    <string name="target_tempo">Objectif</string>
     <string name="tap">Appuyez</string>
 </resources>

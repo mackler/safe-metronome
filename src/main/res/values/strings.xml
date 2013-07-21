@@ -12,7 +12,7 @@
     <string name="set_countdown">Set Countdown Minutes</string>
     <string name="set_start_tempo">Set Starting Tempo</string>
     <string name="next">Next</string>
-    <string name="target_tempo">Target: </string>
+    <string name="target_tempo">Target</string>
     <string name="tap">Tap</string>
     <string-array name="sound_names">
       <item>Clave</item>

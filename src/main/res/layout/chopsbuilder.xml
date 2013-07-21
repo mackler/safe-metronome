@@ -40,9 +40,15 @@ countdown time remaining, and cancel button.-->
 		  android:layout_width="wrap_content"
 		  android:layout_height="wrap_content"
 		  android:text="@string/target_tempo"
-		  android:paddingRight="12sp"
 		  android:textSize="18sp"
 		  android:layout_alignParentLeft="true"
+		  />
+	<TextView
+		  android:layout_width="wrap_content"
+		  android:layout_height="wrap_content"
+		  android:text=":"
+		  android:textSize="18sp"
+		  android:layout_toRightOf="@id/target_tempo_label"
 		  />
 	<TextView android:id="@+id/target_tempo"
 		  android:layout_width="wrap_content"
