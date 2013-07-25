@@ -74,6 +74,9 @@ class MainActivity extends Activity with TypedActivity {
       case R.id.preferences ⇒
         (new SoundPickerFragment).show(getFragmentManager.beginTransaction(), "soundChooser")
         true
+      case R.id.accent ⇒
+        (new AccentPickerFragment).show(getFragmentManager.beginTransaction(), "accentSetting")
+        true
       case R.id.help ⇒
         val helpIntent = new android.content.Intent(this, classOf[HelpActivity])
         startActivity(helpIntent)
@@ -126,6 +129,19 @@ class MainActivity extends Activity with TypedActivity {
   }
 
   def setSound(which: Int) { mainActor ! SetSound(which) }
+
+  def setAccent(which: Int) {
+    logD(s"setting accent to $which")
+    mainActor ! SetAccent(which match {
+      case 0 ⇒ 0
+      case 1 ⇒ 2
+      case 2 ⇒ 3
+      case 3 ⇒ 4
+      case 4 ⇒ 5
+      case 5 ⇒ 6
+      case 6 ⇒ 7
+    })
+  }
 
   def hideStartingProgress() {
     findView(TR.starting_progress).setVisibility(GONE)

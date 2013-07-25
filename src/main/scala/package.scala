@@ -82,6 +82,7 @@ package org.mackler {
     case object SingleTap
     case class  SetTempo(bpm: Float, timestamp: Long)
     case class  SetSound(sound: Int)
+    case class  SetAccent(beats: Int)
     case class  SavePreferences(preferences: SharedPreferences)
 
     case class  BuildChops(startTempo: Float, timeInMinutes: Int)

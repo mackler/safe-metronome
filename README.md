@@ -32,6 +32,8 @@ Credits
 -------
 - Clave recording by [BoilingSand](http://freesound.org/people/BoilingSand/)
 - Cowbell recording by [Neotone](http://freesound.org/people/Neotone/)
+- Hi-hat recording by [cdiupe](http://freesound.org/people/cdiupe/)
+- Bass drum recording by [Karma-Ron](http://freesound.org/people/Karma-Ron/)
 - Boxing Bell sound by [Benboncan](http://freesound.org/people/Benboncan/)
 - ["Candy Clock" Launch Icon](http://cemagraphics.deviantart.com/art/Clock-Icon-96460050) by
   [Cem](http://cemagraphics.deviantart.com/)

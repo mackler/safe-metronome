@@ -8,9 +8,20 @@
     <string name="feedback">зваротную сувязь</string>
     <string name="sources">зыходны код</string>
     <string name="choose_sound">Выбар гуку</string>
+    <string name="set_accent">Падкрэсліце</string>
+    <string name="beats_per_measure">Доляй у такт</string>
     <string name="set_countdown">адлік часу ў хвілінах</string>
     <string name="set_start_tempo">Ўсталяваць зваротны адлік хвілін</string>
     <string name="next">наступнай</string>
     <string name="target_tempo">Мэтавай тэмп</string>
     <string name="tap">Націсніце на</string>
+  <string-array name="time_signatures">
+    <item>без акцэнту</item>
+    <item>2</item>
+    <item>3</item>
+    <item>4</item>
+    <item>5</item>
+    <item>6</item>
+    <item>7</item>
+  </string-array>
 </resources>

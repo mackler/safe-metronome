@@ -8,6 +8,9 @@ class MainActor extends Actor with RequiresMessageQueue[UnboundedMessageQueueSem
 
   private var mTempo: Float = 0
   private var mIsPlaying: Boolean = false
+  private var mBeatsPerMeasure = 0
+  private var mBeat = 0
+
   // Next three lines refer to ChopsBuilder™
   private var mIsPaused      = false
   private var mMillisecondsLeft: Int = 0
@@ -22,8 +25,11 @@ class MainActor extends Actor with RequiresMessageQueue[UnboundedMessageQueueSem
   private var uiOption: Option[MainActivity] = None
 
   private val claveAudio = new Array[Short](FILE_SIZE/2)
+  private val claveAccentAudio = new Array[Short](FILE_SIZE/2)
   private val cowbellAudio = new Array[Short](FILE_SIZE/2)
+  private val cowbellAccentAudio = new Array[Short](FILE_SIZE/2)
   private var audioData = claveAudio
+  private var audioAccentData = claveAccentAudio
   private var audioTrackOption: Option[AudioTrack] = None
   private def track = audioTrackOption.get
 
@@ -79,13 +85,20 @@ class MainActor extends Actor with RequiresMessageQueue[UnboundedMessageQueueSem
 
         readSound(resources, R.raw.clave,   claveAudio)
         readSound(resources, R.raw.cowbell, cowbellAudio)
+        readSound(resources, R.raw.clave_accent,   claveAccentAudio)
+        readSound(resources, R.raw.cowbell_accent, cowbellAccentAudio)
 
 	val preferences = uiOption.get.getPreferences(MODE_PRIVATE)
 	mTempo = preferences.getFloat("tempo", 120)
-        audioData = preferences.getString("sound","clave") match {
-	  case "clave"   ⇒ claveAudio
-	  case "cowbell" ⇒ cowbellAudio
+        preferences.getString("sound","clave") match {
+	  case "clave" ⇒
+	    audioData = claveAudio
+	    audioAccentData = claveAccentAudio
+	  case "cowbell" ⇒
+	    audioData = cowbellAudio
+	    audioAccentData = cowbellAccentAudio
 	}
+	mBeatsPerMeasure = preferences.getInt("beatsPerMeasure", 0)
 	mTargetTempo = preferences.getFloat("targetTempo", 0)
 	mMillisecondsLeft = preferences.getInt("timeLeft", 0)
 	if (mMillisecondsLeft > 0) alertActor ! AlertActor.Load(uiOption.get)
@@ -115,9 +128,9 @@ class MainActor extends Actor with RequiresMessageQueue[UnboundedMessageQueueSem
 
     case PlayLoop ⇒
       if (mIsPlaying) {
+	if (mBeatsPerMeasure > 0 && track.getPlayState != PLAYSTATE_PLAYING) mBeat = 1
+
 	val samplesPerBeat = (SAMPLES_PER_MINUTE / mTempo).round
-//	track.setNotificationMarkerPosition (samplesPerBeat)
-//	track.setPlaybackPositionUpdateListener(endListener)
 
 	if (mMillisecondsLeft > 0 && !mIsPaused) { // ChopsBuilder™ is on
 	  val millisecondsPerBeat = (samplesPerBeat / 44.1).round.toInt
@@ -131,7 +144,11 @@ class MainActor extends Actor with RequiresMessageQueue[UnboundedMessageQueueSem
 	  }
 	}
 	if (track.getPlayState != PLAYSTATE_PLAYING) track.play()
-	track.write(audioData, 0, samplesPerBeat)
+	track.write(if (mBeat == 1) audioAccentData else audioData, 0, samplesPerBeat)
+	if (mBeatsPerMeasure > 0) {
+	  mBeat += 1
+	  if (mBeat > mBeatsPerMeasure) mBeat = 1
+	}
 	self ! PlayLoop
       } else {
 	track.stop() // if user stops playing, let loop finish
@@ -143,8 +160,19 @@ class MainActor extends Actor with RequiresMessageQueue[UnboundedMessageQueueSem
     case SetTempo(bpm,timestamp) ⇒ if (bpm != mTempo) mTempo = bpm
 
     case SetSound(sound: Int) ⇒ sound match {
-      case 0 ⇒ audioData = claveAudio
-      case 1 ⇒ audioData = cowbellAudio
+      case 0 ⇒
+        audioData = claveAudio
+        audioAccentData = claveAccentAudio
+      case 1 ⇒
+        audioData = cowbellAudio
+        audioAccentData = cowbellAccentAudio
+    }
+
+    case SetAccent(beats: Int) ⇒ {
+      logD(s"main actor setting accent beat to $beats")
+      if (mBeatsPerMeasure == 0) mBeat = 1
+      mBeatsPerMeasure = beats
+      if (mBeatsPerMeasure == 0) mBeat = 0
     }
 
     case SavePreferences(preferences) ⇒
@@ -154,6 +182,7 @@ class MainActor extends Actor with RequiresMessageQueue[UnboundedMessageQueueSem
 	case `claveAudio`   ⇒ "clave"
 	case `cowbellAudio` ⇒ "cowbell"
       })
+      editor.putInt("beatsPerMeasure", mBeatsPerMeasure)
       if (mMillisecondsLeft > 0) {
         editor.putFloat("targetTempo", mTargetTempo)
         editor.putInt("timeLeft", mMillisecondsLeft)
@@ -270,6 +299,7 @@ object MyComparator extends java.util.Comparator[Envelope] {
       case   DecrementCountdown ⇒  1
       case   Tick               ⇒  2
       case _:SetSound           ⇒  3
+      case _:SetAccent          ⇒  3
       case   PauseChopsBuilder  ⇒  5
       case   PlayLoop           ⇒  10
     }

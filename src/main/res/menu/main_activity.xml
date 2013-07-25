@@ -3,6 +3,10 @@
           android:icon="@drawable/ic_sysbar_quicksettings"
           android:title="@string/set_sound"
 	  />
+    <item android:id="@+id/accent"
+          android:icon="@drawable/ic_sysbar_accent"
+          android:title="@string/set_accent"
+	  />
     <item android:id="@+id/help"
           android:icon="@android:drawable/ic_menu_help"
           android:title="@string/help"

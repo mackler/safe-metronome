@@ -8,9 +8,21 @@
     <string name="feedback">Invia commenti</string>
     <string name="sources">Codice sorgente</string>
     <string name="choose_sound">Scegliere il suono</string>
+    <string name="set_accent">Accent movimento in battere</string>
+    <string name="beats_per_measure">Battute per misura</string>
     <string name="set_countdown">Rovescia in minuti</string>
     <string name="set_start_tempo">Inizio del tempo</string>
     <string name="next">Successivo</string>
     <string name="target_tempo">Obiettivo</string>
     <string name="tap">Tocca</string>
+  <string-array name="time_signatures">
+    <item>Senza Accento</item>
+    <item>2</item>
+    <item>3</item>
+    <item>4</item>
+    <item>5</item>
+    <item>6</item>
+    <item>7</item>
+  </string-array>
+
 </resources>

@@ -8,9 +8,20 @@
     <string name="feedback">Sprzężenie Zwrotne</string>
     <string name="sources">Kod źródłowy</string>
     <string name="choose_sound">Wybrać Dźwięk</string>
+    <string name="set_accent">Accent stukania</string>
+    <string name="beats_per_measure">Uderzeń na meauser</string>
     <string name="set_countdown">Ustaw minuty odliczania</string>
     <string name="set_start_tempo">Ustaw tempo startowego</string>
     <string name="next">Następny</string>
     <string name="target_tempo">Cel</string>
     <string name="tap">Dotknij</string>
+  <string-array name="time_signatures">
+    <item>Bez Akcentu</item>
+    <item>2</item>
+    <item>3</item>
+    <item>4</item>
+    <item>5</item>
+    <item>6</item>
+    <item>7</item>
+  </string-array>
 </resources>

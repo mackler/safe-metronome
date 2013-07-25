@@ -1,21 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Safe Metronome</string>
-    <string name="start">Start</string>
-    <string name="stop">Stop</string>
-    <string name="set_sound">Beat Sound</string>
-    <string name="about">About</string>
-    <string name="help">Help</string>
-    <string name="feedback">Send Feedback</string>
-    <string name="sources">View Sourcecode</string>
-    <string name="choose_sound">Choose Sound</string>
-    <string name="set_countdown">Set Countdown Minutes</string>
-    <string name="set_start_tempo">Set Starting Tempo</string>
-    <string name="next">Next</string>
-    <string name="target_tempo">Target</string>
-    <string name="tap">Tap</string>
-    <string-array name="sound_names">
-      <item>Clave</item>
-      <item>Cow Bell</item>
-    </string-array>
+  <string name="app_name">Safe Metronome</string>
+  <string name="start">Start</string>
+  <string name="stop">Stop</string>
+  <string name="set_sound">Beat Sound</string>
+  <string name="about">About</string>
+  <string name="help">Help</string>
+  <string name="feedback">Send Feedback</string>
+  <string name="sources">View Sourcecode</string>
+  <string name="choose_sound">Choose Sound</string>
+  <string name="set_accent">Downbeat Accent</string>
+  <string name="beats_per_measure">Beats per Measure</string>
+  <string name="set_countdown">Set Countdown Minutes</string>
+  <string name="set_start_tempo">Set Starting Tempo</string>
+  <string name="next">Next</string>
+  <string name="target_tempo">Target</string>
+  <string name="tap">Tap</string>
+  <string-array name="sound_names">
+    <item>Clave</item>
+    <item>Cow Bell</item>
+  </string-array>
+  <string-array name="time_signatures">
+    <item>No Accent</item>
+    <item>2</item>
+    <item>3</item>
+    <item>4</item>
+    <item>5</item>
+    <item>6</item>
+    <item>7</item>
+  </string-array>
 </resources>

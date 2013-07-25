@@ -33,6 +33,8 @@ object AboutFragment {
                    |Credits:
                    |Clave by BoilingSand
                    |Cowbell by Neotone
+                   |Hi-hat by cdiupe
+                   |Bass drum by Karma-Ron
                    |Boxing bell by Benboncan
                    |"Candy Clock" graphic by Cem
                    |Start icon by Peter Schwarz
