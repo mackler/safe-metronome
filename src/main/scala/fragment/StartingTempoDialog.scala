@@ -39,14 +39,12 @@ class StartingTempoDialog extends DialogFragment {
 
     val tapButton = tempoLayout.findViewById(R.id.dialog_tap_button).asInstanceOf[View]
     tapButton.setOnClickListener( new android.view.View.OnClickListener {
-      def onClick(v: View) {
-	getActivity.asInstanceOf[MainActivity].onTap(v)
-      }
+      def onClick(v: View) { getActivity.asInstanceOf[MainActivity].onTap(v) }
     })
-    if (getActivity.asInstanceOf[MainActivity].tapTime != 0) {
-      tapButton.setBackgroundResource(android.R.color.holo_blue_bright)
-      // cause button to turn back to oronge if not tapped in time
-    }
+/*    if (getActivity.asInstanceOf[MainActivity].tapTime != 0) {
+      tapButton.setBackgroundResource(R.color.tap_setting)
+      // cause button to turn back to default color if not tapped in time
+    }*/
 
     val startButton = tempoLayout.findViewById(R.id.start_button).asInstanceOf[Button]
     startButton.setOnClickListener( new android.view.View.OnClickListener {

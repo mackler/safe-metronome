@@ -20,6 +20,8 @@ package org.mackler {
     val  ActorSystem = akka.actor.ActorSystem
     type Cancellable = akka.actor.Cancellable
     val  Props       = akka.actor.Props
+    type RequiresMessageQueue[T]        = akka.dispatch.RequiresMessageQueue[T]
+    type UnboundedMessageQueueSemantics = akka.dispatch.UnboundedMessageQueueSemantics
 
     /* Android includes */
 
@@ -77,6 +79,7 @@ package org.mackler {
     case class  Start(timestamp: Long)
     case class  Stop(timestamp: Long)
     case object PlayLoop
+    case object SingleTap
     case class  SetTempo(bpm: Float, timestamp: Long)
     case class  SetSound(sound: Int)
     case class  SavePreferences(preferences: SharedPreferences)

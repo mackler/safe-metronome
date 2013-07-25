@@ -7,27 +7,9 @@ class MainActivity extends Activity with TypedActivity {
 
   private var mTempo = 0
 
-  /** The tempo can be set by tapping.  To do so, this variable will store the
-   * time at which the first tap occurred, in order that it can be subtracted from
-   * the time of the second tap.  The difference is the duration of one beat. */
-  private var mTapped: Long = 0
-  def tapTime: Long = mTapped
-
-  private def acknowledgeFirstTap(view: View) {
-    val timeSinceTap = System.currentTimeMillis - mTapped
-    val delay = (60000/32) - timeSinceTap
-    if (delay > 0) {
-      view.setBackgroundResource(android.R.color.holo_blue_bright)
-      mHandler.postDelayed(new Runnable { def run {
-	mTapped = 0 
-	view.setBackgroundResource(android.R.color.holo_orange_light)
-      }}, delay )
-    }
-  }
-
   override def onResume() {
     super.onResume()
-    if (mTapped != 0) {
+    if (mTapped != 0) { // We're in the process of setting tempo by tapping
       // We have to know whether or not the first tap came from the StartTempoDialog
       val startTempoFragment = getFragmentManager.findFragmentByTag("startTempo")
       if (startTempoFragment == null)
@@ -168,14 +150,22 @@ class MainActivity extends Activity with TypedActivity {
     mainActor ! SetTempo(mTempo, System.currentTimeMillis)
   }
 
+  /** The tempo can be set by tapping.  To do so, this variable will store the
+   * time at which the first tap occurred, in order that it can be subtracted from
+   * the time of the second tap.  The difference is the duration of one beat. */
+  private var mTapped: Long = 0
+  //  def tapTime: Long = mTapped
+
   def onTap(view: View) {
     if (mTapped == 0) {
+      mainActor ! SingleTap
       mTapped = System.currentTimeMillis
       acknowledgeFirstTap(view)
     } else {
       val durationInMillis = System.currentTimeMillis - mTapped
       mTapped = 0
       val newTempo = (60000.0 / durationInMillis ).round.toInt
+      // Taps might come from either the main display or the ChopsBuilder™ dialog:
       if (view == findView(TR.tap_button)) {
 	setTempoDisplay ( newTempo )
 	mainActor ! SetTempo(mTempo, System.currentTimeMillis)
@@ -192,6 +182,18 @@ class MainActivity extends Activity with TypedActivity {
 	ft.commit()
       }
       displayPlayingButtons()
+    }
+  }
+
+  private def acknowledgeFirstTap(view: View) {
+    val timeSinceTap = System.currentTimeMillis - mTapped
+    val delay = (60000/32) - timeSinceTap
+    if (delay > 0) {
+      view.setBackgroundResource(R.color.tap_setting)
+      mHandler.postDelayed(new Runnable { def run {
+	mTapped = 0 
+	view.setBackgroundResource(R.color.tap_inactive)
+      }}, delay )
     }
   }
 

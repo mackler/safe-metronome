@@ -2,34 +2,32 @@ package org.mackler.metronome
 
 import scala.concurrent.duration._
 
-class MainActor extends Actor
-with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSemantics]
- {
+class MainActor extends Actor with RequiresMessageQueue[UnboundedMessageQueueSemantics] {
   import MainActor._
-  implicit val executionContext = context.system.dispatcher
+  implicit private val executionContext = context.system.dispatcher
 
-  var mTempo: Float = 0
-  var mIsPlaying: Boolean = false
-  private var mIsPaused = false // refers to ChopsBuilder™
-  var mMillisecondsLeft: Int = 0
-  var mTargetTempo: Float = 0
+  private var mTempo: Float = 0
+  private var mIsPlaying: Boolean = false
+  // Next three lines refer to ChopsBuilder™
+  private var mIsPaused      = false
+  private var mMillisecondsLeft: Int = 0
+  private var mTargetTempo: Float    = 0
 
   // sound is raw PCM with sample rate 44100, depth 16 bits, big-endian, mono,
   // single beat @ 32 BPM, ie, 82688 samples per beat (rounded up from 82687.5)
   // file size in 8-bit bytes
-  final val FILE_SIZE = 165376
-  // TODO: find optimal buffer size programmatically
-  var bufferSizeInBytes = 0
+  private final val FILE_SIZE = 165376
+  private var bufferSizeInBytes = 0
  
-  var uiOption: Option[MainActivity] = None
-  var audioTrackOption: Option[AudioTrack] = None
-  val claveAudio = new Array[Short](FILE_SIZE/2)
-  val cowbellAudio = new Array[Short](FILE_SIZE/2)
-  var audioData = claveAudio
+  private var uiOption: Option[MainActivity] = None
 
-  val alertActor = context.system.actorOf(Props[AlertActor],"alertActor")
-
+  private val claveAudio = new Array[Short](FILE_SIZE/2)
+  private val cowbellAudio = new Array[Short](FILE_SIZE/2)
+  private var audioData = claveAudio
+  private var audioTrackOption: Option[AudioTrack] = None
   private def track = audioTrackOption.get
+
+  private val alertActor = context.system.actorOf(Props[AlertActor],"alertActor")
 
   /* When ChopsBuilder™ is running, this ticker causes a runnable to
    * be sent to the UI to update the countdown time display */
@@ -101,9 +99,23 @@ with akka.dispatch.RequiresMessageQueue[akka.dispatch.UnboundedMessageQueueSeman
  
     case Start(_) ⇒ startMetronome()
 
+    case SingleTap ⇒ if (!mIsPlaying) {
+      if (track.getPlayState != PLAYSTATE_PLAYING) track.play()
+      track.write(audioData, 0, MIN_SAMPLES)
+      track.setNotificationMarkerPosition (MIN_SAMPLES)
+      track.setPlaybackPositionUpdateListener(new OnPlaybackPositionUpdateListener {
+	def onMarkerReached(track: AudioTrack) {
+	  logD("End of single tap reached")
+	  track.stop()
+	  track.setNotificationMarkerPosition (0)
+	}
+	def onPeriodicNotification(track: AudioTrack) {}
+      })
+    }
+
     case PlayLoop ⇒
       if (mIsPlaying) {
-	val samplesPerBeat = (2646000 / mTempo).round
+	val samplesPerBeat = (SAMPLES_PER_MINUTE / mTempo).round
 //	track.setNotificationMarkerPosition (samplesPerBeat)
 //	track.setPlaybackPositionUpdateListener(endListener)
 
@@ -213,6 +225,8 @@ object MainActor {
   // Tempo range is same as Korg KDM-2
   final val MIN_TEMPO = 32
   final val MAX_TEMPO = 252
+  final val SAMPLES_PER_MINUTE = 44100 * 60
+  final val MIN_SAMPLES = (SAMPLES_PER_MINUTE / MAX_TEMPO).round
 }
 
 class PriorityMailbox(settings: akka.actor.ActorSystem.Settings, config: com.typesafe.config.Config)
@@ -246,9 +260,10 @@ object MyComparator extends java.util.Comparator[Envelope] {
     def priorityVal(message: Any) = message match {
       case _:Stop               ⇒ -6
       case _:Start              ⇒ -6
-      case _:SavePreferences    ⇒ -5
-      case _:SetUi              ⇒ -4
-      case _:BuildChops         ⇒ -3
+      case   SingleTap          ⇒ -5
+      case _:SavePreferences    ⇒ -4
+      case _:SetUi              ⇒ -3
+      case _:BuildChops         ⇒ -2
       case _:SetTempo           ⇒ -1
       case   ChopsCancel        ⇒  0
       case   IncrementCountdown ⇒  1
