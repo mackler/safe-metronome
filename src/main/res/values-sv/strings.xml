@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="start">Börja</string>
+    <string name="stop">Sluta</string>
+    <string name="set_sound">Ljudet av rytmen</string>
+    <string name="about">Handlar om</string>
+    <string name="help">Hjälp</string>
+    <string name="feedback">Återkoppling</string>
+    <string name="sources">Källkoden</string>
+    <string name="choose_sound">Välj ljudet</string>
+    <string name="set_accent">Accent betonat taktslag</string>
+    <string name="beats_per_measure">Slag per takt</string>
+    <string name="set_countdown">Ställ nedräkningen minuter</string>
+    <string name="set_start_tempo">Ställ inledande tempo</string>
+    <string name="next">Efterföljande</string>
+    <string name="target_tempo">Mål</string>
+    <string name="tap">Peka på</string>
+  <string-array name="time_signatures">
+    <item>Utan tonvikt</item>
+    <item>2</item>
+    <item>3</item>
+    <item>4</item>
+    <item>5</item>
+    <item>6</item>
+    <item>7</item>
+  </string-array>
+</resources>
