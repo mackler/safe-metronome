@@ -38,13 +38,7 @@ class StartingTempoDialog extends DialogFragment {
     tempoPicker.setOnLongPressUpdateInterval(5)
 
     val tapButton = tempoLayout.findViewById(R.id.dialog_tap_button).asInstanceOf[View]
-    tapButton.setOnClickListener( new android.view.View.OnClickListener {
-      def onClick(v: View) { getActivity.asInstanceOf[MainActivity].onTap(v) }
-    })
-/*    if (getActivity.asInstanceOf[MainActivity].tapTime != 0) {
-      tapButton.setBackgroundResource(R.color.tap_setting)
-      // cause button to turn back to default color if not tapped in time
-    }*/
+    tapButton.setOnTouchListener(getActivity.asInstanceOf[MainActivity].onTapListener)
 
     val startButton = tempoLayout.findViewById(R.id.start_button).asInstanceOf[Button]
     startButton.setOnClickListener( new android.view.View.OnClickListener {

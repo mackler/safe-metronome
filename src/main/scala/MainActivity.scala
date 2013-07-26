@@ -40,7 +40,8 @@ class MainActivity extends Activity with TypedActivity {
 
     // Can't use the typeed findView() here because the
     // seek_bar is of different types between the landscape and portrait orientation
-    findViewById(R.id.seek_bar).asInstanceOf[SeekBar].setOnSeekBarChangeListener(new OnSeekBarChangeListener {
+    findViewById(R.id.seek_bar).asInstanceOf[SeekBar].
+    setOnSeekBarChangeListener(new OnSeekBarChangeListener {
       def onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
 	if (fromUser) {
 	  setTempoNumberDisplay(progress + 32)
@@ -60,6 +61,8 @@ class MainActivity extends Activity with TypedActivity {
 			       
     findView(TR.slower_button).setOnLongClickListener(new LongClickAdjustListener(TR.slower_button, -1))
     findView(TR.faster_button).setOnLongClickListener(new LongClickAdjustListener(TR.faster_button, 1))
+
+    findView(TR.tap_button).setOnTouchListener(onTapListener)
 
     mainActor ! SetUi(this)
   }
@@ -131,7 +134,6 @@ class MainActivity extends Activity with TypedActivity {
   def setSound(which: Int) { mainActor ! SetSound(which) }
 
   def setAccent(which: Int) {
-    logD(s"setting accent to $which")
     mainActor ! SetAccent(which match {
       case 0 ⇒ 0
       case 1 ⇒ 2
@@ -172,32 +174,37 @@ class MainActivity extends Activity with TypedActivity {
   private var mTapped: Long = 0
   //  def tapTime: Long = mTapped
 
-  def onTap(view: View) {
-    if (mTapped == 0) {
-      mainActor ! SingleTap
-      mTapped = System.currentTimeMillis
-      acknowledgeFirstTap(view)
-    } else {
-      val durationInMillis = System.currentTimeMillis - mTapped
-      mTapped = 0
-      val newTempo = (60000.0 / durationInMillis ).round.toInt
-      // Taps might come from either the main display or the ChopsBuilder™ dialog:
-      if (view == findView(TR.tap_button)) {
-	setTempoDisplay ( newTempo )
-	mainActor ! SetTempo(mTempo, System.currentTimeMillis)
-	view.setBackgroundResource(android.R.color.holo_orange_light)
-	mainActor ! Start(System.currentTimeMillis)
-      } else {
-	val ft = getFragmentManager.beginTransaction
-	val fragment = getFragmentManager.findFragmentByTag("startTempo")
-	if (newTempo < mTempo) {
-	  startChopsBuilder ( newTempo, fragment.asInstanceOf[StartingTempoDialog].minutes )
-	  setTempoDisplay ( newTempo )
+  object onTapListener extends android.view.View.OnTouchListener {
+    def onTouch(view: View, event: android.view.MotionEvent): Boolean = {
+      if (event.getActionMasked == android.view.MotionEvent.ACTION_DOWN) {
+	if (mTapped == 0) {
+	  mainActor ! SingleTap
+	  mTapped = System.currentTimeMillis
+	  acknowledgeFirstTap(view)
+	} else {
+	  val durationInMillis = System.currentTimeMillis - mTapped
+	  mTapped = 0
+	  val newTempo = (60000.0 / durationInMillis ).round.toInt
+	  // Taps might come from either the main display or the ChopsBuilder™ dialog:
+	  if (view == findView(TR.tap_button)) {
+	    setTempoDisplay ( newTempo )
+	    mainActor ! SetTempo(mTempo, System.currentTimeMillis)
+	    view.setBackgroundResource(R.color.tap_setting)
+	    mainActor ! Start(System.currentTimeMillis)
+	  } else {
+	    val ft = getFragmentManager.beginTransaction
+	    val fragment = getFragmentManager.findFragmentByTag("startTempo")
+	    if (newTempo < mTempo) {
+	      startChopsBuilder ( newTempo, fragment.asInstanceOf[StartingTempoDialog].minutes )
+	      setTempoDisplay ( newTempo )
+	    }
+	    ft.remove(fragment)
+	    ft.commit()
+	  }
+	  displayPlayingButtons()
 	}
-	ft.remove(fragment)
-	ft.commit()
-      }
-      displayPlayingButtons()
+	true
+      } else false
     }
   }
 
@@ -268,12 +275,12 @@ class MainActivity extends Activity with TypedActivity {
       case true ⇒
         text.setText(R.string.start)
         icon.setImageResource(R.drawable.ic_start)
-        button.setBackgroundResource(android.R.color.holo_green_light)
+        button.setBackgroundResource(R.color.go)
 
       case false ⇒
         text.setText(R.string.stop)
         icon.setImageResource(R.drawable.ic_stop)
-        button.setBackgroundResource(android.R.color.holo_red_dark)
+        button.setBackgroundResource(R.color.stop)
     }
   }
 

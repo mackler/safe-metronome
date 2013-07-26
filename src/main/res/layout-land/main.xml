@@ -52,7 +52,6 @@
 
     <LinearLayout android:id="@+id/tap_button"
 		  style="@style/ControlButton"
-		  android:onClick="onTap"
 		  android:background="@android:color/holo_orange_light"
 		  >
       <include layout="@layout/tap_button"/>

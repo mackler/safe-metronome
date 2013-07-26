@@ -2,4 +2,6 @@
 <resources>
   <color name="tap_inactive">@android:color/holo_orange_light</color>
   <color name="tap_setting">@android:color/holo_blue_bright</color>
+  <color name="go">@android:color/holo_green_light</color>
+  <color name="stop">@android:color/holo_red_dark</color>
 </resources>
