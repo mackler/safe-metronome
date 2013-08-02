@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="start">スタート</string>
+    <string name="stop">停止</string>
+    <string name="set_sound">サウンド</string>
+    <string name="about">詳細</string>
+    <string name="help">ヘルプ</string>
+    <string name="feedback">お問い合わせ</string>
+    <string name="sources">ソースコード</string>
+    <string name="choose_sound">選択</string>
+    <string name="set_accent">拍子</string>
+    <string name="beats_per_measure">何拍子</string>
+    <string name="set_countdown">残り何分</string>
+    <string name="set_start_tempo">開始テンポ</string>
+    <string name="next">次へ</string>
+    <string name="target_tempo">最終テンポ</string>
+    <string name="tap">タッチ</string>
+  <string-array name="time_signatures">
+    <item>無拍子</item>
+    <item>2拍子</item>
+    <item>3拍子</item>
+    <item>4拍子</item>
+    <item>5拍子</item>
+    <item>6拍子</item>
+    <item>7拍子</item>
+  </string-array>
+</resources>
