@@ -27,7 +27,6 @@
 
     <LinearLayout android:id="@+id/control_button"
 		style="@style/ControlButton"
-		android:onClick="toggle"
 		android:background="@android:color/holo_green_light"
 		>
       <include layout="@layout/toggle_button"/>
@@ -35,7 +34,6 @@
 
     <LinearLayout android:id="@+id/tap_button"
 		  style="@style/ControlButton"
-		  android:onClick="onTap"
 		  android:background="@android:color/holo_orange_light"
 		  >
       <include layout="@layout/tap_button"/>

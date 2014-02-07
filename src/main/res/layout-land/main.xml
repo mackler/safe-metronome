@@ -44,7 +44,6 @@
 
     <LinearLayout android:id="@+id/control_button"
 		style="@style/ControlButton"
-		android:onClick="toggle"
 		android:background="@android:color/holo_green_light"
 		>
       <include layout="@layout/toggle_button"/>

@@ -109,14 +109,12 @@ countdown time remaining, and cancel button.-->
 		   android:layout_width="wrap_content"
 		   android:layout_height="wrap_content"
 		   android:src="@android:drawable/ic_media_pause"
-		   android:onClick="pauseChopsBuilder"
 		   android:visibility="gone"
 		   />
       <ImageButton android:id="@+id/chops_unpause"
 		   android:layout_width="wrap_content"
 		   android:layout_height="wrap_content"
 		   android:src="@android:drawable/ic_media_play"
-		   android:onClick="toggle"
 		   />
     </LinearLayout>
   </LinearLayout>

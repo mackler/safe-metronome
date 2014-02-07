@@ -7,6 +7,10 @@ class MainActivity extends Activity with TypedActivity {
 
   private var mTempo = 0
 
+  lazy val onTapListener = new DownListener(onTap)
+  lazy val controlListener = new DownListener(toggle)
+  lazy val chopsBuilderPauseListener = new DownListener(pauseChopsBuilder)
+
   override def onResume() {
     super.onResume()
     if (mTapped != 0) { // We're in the process of setting tempo by tapping
@@ -61,6 +65,9 @@ class MainActivity extends Activity with TypedActivity {
     findView(TR.slower_button).setOnLongClickListener(new LongClickAdjustListener(TR.slower_button, -1))
     findView(TR.faster_button).setOnLongClickListener(new LongClickAdjustListener(TR.faster_button, 1))
 
+    findView(TR.control_button).setOnTouchListener(controlListener)
+    findView(TR.chops_unpause).setOnTouchListener(controlListener)
+    findView(TR.chops_pause).setOnTouchListener(chopsBuilderPauseListener)
     findView(TR.tap_button).setOnTouchListener(onTapListener)
 
     mainActor ! SetUi(this)
@@ -117,7 +124,8 @@ class MainActivity extends Activity with TypedActivity {
     findView(TR.marking).setText(marking(mTempo))
   }
 
-  def toggle(view: View) {
+  /** Toggles the state of the metronome between either beating or not */
+  private def toggle(view: View) {
     if (view == findView(TR.control_button)) {
       val startString = getString(R.string.start)
       val stopString = getString(R.string.stop)
@@ -175,44 +183,50 @@ class MainActivity extends Activity with TypedActivity {
    * the time of the second tap.  The difference is the duration of one beat. */
   private var mTapped: Long = 0
 
-  object onTapListener extends android.view.View.OnTouchListener {
+  /** "onClick" takes action upon releasing a button, whereas we want to act
+    * as soon as a button is pressed, not released.  Construct an instance of this
+    * class with an argument of a `Unit`-type function, and it is an `OnTouchListener`
+    * that will invoked that function upon being touched. */
+  class DownListener(action: Function1[View,Unit]) extends OnTouchListener {
     def onTouch(view: View, event: android.view.MotionEvent): Boolean = {
       event.getActionMasked match {
-	case android.view.MotionEvent.ACTION_DOWN => mTapped match {
-	  case 0 => /* this is the first tap to start watching for the tempo */
-	    mainActor ! SingleTap
-	    mTapped = System.currentTimeMillis
-	    logD(s"first tap at $mTapped")
-	    acknowledgeFirstTap(view)
+	case ACTION_DOWN => action(view); true
+	case _           => false
+      }
+    }
+  }
 
-	  case _ => /* this second tap gives us the tempo */
-	    var newTempo = (60000.0 / (System.currentTimeMillis - mTapped) ).round.toInt
-	    mTapped = 0
-	    if (newTempo > MainActor.MAX_TEMPO) newTempo = MainActor.MAX_TEMPO 
-	    logD(s"second tap requests tempo of $newTempo")
-	    /* Taps might come from either the main display or the ChopsBuilder™ dialog: */
-	    if (view == findView(TR.tap_button)) {
+  /** This method is invoked when a tap-to-set-tempo button is touched, either
+    * on the main screen, or in the ChopsBuilder™ dialog.  The first tap
+    * starts a timer, the second tap sets the tempo relative to the first tap. */
+  private def onTap(view: View) {
+    mTapped match {
+      case 0 => /* this is the first tap to start watching for the tempo */
+	mainActor ! SingleTap              // make a sound
+        mTapped = System.currentTimeMillis // record the time for comparing to the second tap
+        acknowledgeFirstTap(view)          // change the color of the button
+
+      case _ => /* this second tap gives us the tempo */
+	var newTempo = (60000.0 / (System.currentTimeMillis - mTapped) ).round.toInt
+        mTapped = 0  // reset the timer
+        if (newTempo > MainActor.MAX_TEMPO) newTempo = MainActor.MAX_TEMPO // limit to maximum
+        /* Taps might come from either the main display or the ChopsBuilder™ dialog: */
+        if (view == findView(TR.tap_button)) {
               /* Second tap came from the button on the main screen */
 	      setTempoDisplay ( newTempo )                           // this resets mTempo
 	      mainActor ! SetTempo(mTempo, System.currentTimeMillis) // this passes mTempo
 	      view.setBackgroundResource(R.color.tap_inactive)
 	      mainActor ! Start(System.currentTimeMillis)
-	    } else {
-	      /* Second tap came from the ChopsBuilder™ start-tempo dialog*/
-	      val ft = getFragmentManager.beginTransaction
-	      val fragment = getFragmentManager findFragmentByTag "startTempo"
-              /* The ChopsBuilder™ target tempo is mTempo when startChopsBuilder() is called */
-	      startChopsBuilder ( newTempo, fragment.asInstanceOf[StartingTempoDialog].minutes )
-	      setTempoDisplay ( newTempo ) // this resets mTempo
-	      ft remove fragment
-	      ft.commit()
-	    }
-	    displayPlayingButtons()
+	} else {        /* Second tap came from the ChopsBuilder™ start-tempo dialog*/
+	  val ft = getFragmentManager.beginTransaction
+	  val fragment = getFragmentManager findFragmentByTag "startTempo"
+          /* The ChopsBuilder™ target tempo is mTempo when startChopsBuilder() is called */
+	  startChopsBuilder ( newTempo, fragment.asInstanceOf[StartingTempoDialog].minutes )
+	  setTempoDisplay ( newTempo ) // this resets mTempo
+	  ft remove fragment
+	  ft.commit()
 	}
-	true
-
-	case _ => false /* the event was something other than ACTION_DOWN */
-      }
+	displayPlayingButtons()
     }
   }
 
@@ -229,7 +243,7 @@ class MainActivity extends Activity with TypedActivity {
     }
   }
 
-  def pauseChopsBuilder(view: View) {
+  private def pauseChopsBuilder(view: View) {
     mainActor ! PauseChopsBuilder
     findView(TR.chops_pause).setVisibility(GONE)
     findView(TR.chops_unpause).setVisibility(VISIBLE)
@@ -329,6 +343,7 @@ class MainActivity extends Activity with TypedActivity {
     setTempoDisplay(startTempo)
     displayPlayingButtons()
     mainActor ! BuildChops(startTempo, countdownMinutes)
+    getWindow addFlags FLAG_KEEP_SCREEN_ON
   }
 
   def displayChopsBuilderData(tempo: Int, milliSeconds: Int) {
