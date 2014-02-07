@@ -115,12 +115,12 @@ class MainActor extends Actor with RequiresMessageQueue[UnboundedMessageQueueSem
     case SingleTap ⇒ if (!mIsPlaying) {
       if (track.getPlayState != PLAYSTATE_PLAYING) track.play()
       track.write(audioData, 0, MIN_SAMPLES)
-      track.setNotificationMarkerPosition (MIN_SAMPLES)
+      track setNotificationMarkerPosition MIN_SAMPLES
       track.setPlaybackPositionUpdateListener(new OnPlaybackPositionUpdateListener {
 	def onMarkerReached(track: AudioTrack) {
-	  logD("End of single tap reached")
+	  logD("End of single loop reached")
 	  track.stop()
-	  track.setNotificationMarkerPosition (0)
+	  track setNotificationMarkerPosition 0
 	}
 	def onPeriodicNotification(track: AudioTrack) {}
       })
@@ -157,7 +157,9 @@ class MainActor extends Actor with RequiresMessageQueue[UnboundedMessageQueueSem
  
     case Stop(_) ⇒ mIsPlaying = false
 
-    case SetTempo(bpm,timestamp) ⇒ if (bpm != mTempo) mTempo = bpm
+    case SetTempo(bpm,timestamp) =>
+      logD(s"MainActor received SetTempo($bpm) message")
+      if (bpm != mTempo) mTempo = bpm
 
     case SetSound(sound: Int) ⇒ sound match {
       case 0 ⇒

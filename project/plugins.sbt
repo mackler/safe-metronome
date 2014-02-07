@@ -2,4 +2,4 @@ resolvers += Resolver.url("scalasbt releases", new URL("http://scalasbt.artifact
 
 addSbtPlugin("org.scala-sbt" % "sbt-android" % "0.6.4")
 
-addSbtPlugin("org.ensime" % "ensime-sbt-cmd" % "0.1.0")
+// addSbtPlugin("org.ensime" % "ensime-sbt-cmd" % "0.1.0")

@@ -2,8 +2,8 @@ package org.mackler.metronome
 
 class StartingTempoDialog extends DialogFragment {
   var mMinutes: Int = 0
-  var mStartTempo: Int = 0
-  var mMaxTempo: Int = 0
+  var mStartTempo: Int = MainActor.MIN_TEMPO
+  var mMaxTempo: Int = MainActor.MAX_TEMPO
 
   def minutes = mMinutes
 
@@ -12,7 +12,7 @@ class StartingTempoDialog extends DialogFragment {
     val args = if (savedInstanceState != null) savedInstanceState else getArguments
     mMinutes = args.getInt("minutes")
     mStartTempo = args.getInt("startTempo")
-    mMaxTempo = args.getInt("maxTempo")
+    mMaxTempo = args.getInt("maxTempo") // not used anymore; some didn't like limit
   }
 
   override def onSaveInstanceState(outState: Bundle) {
@@ -20,7 +20,17 @@ class StartingTempoDialog extends DialogFragment {
     outState.putInt("minutes",mMinutes)
     outState.putInt(
       "startTempo",
-      getView.findViewById(R.id.tempo_picker).asInstanceOf[NumberPicker].getValue
+      { /* on Dec 12, 2013 someone got an NPE from either getView or findViewById,
+         * which were then both on same line. */
+        Option(getView) match {
+	  case None => mStartTempo
+	  case Some(rootView) =>
+	    (Option(rootView.findViewById(R.id.tempo_picker)): @unchecked) match {
+	      case None => mStartTempo
+	      case Some(numberPicker: NumberPicker) => numberPicker.getValue
+	    }
+	}
+      }
     )
     outState.putInt("maxTempo", mMaxTempo)
   }
@@ -31,8 +41,8 @@ class StartingTempoDialog extends DialogFragment {
     this.getDialog.setTitle(getString(R.string.set_start_tempo))
     val tempoLayout: View = inflater.inflate(R.layout.start_tempo, container, false)
     val tempoPicker = tempoLayout.findViewById(R.id.tempo_picker).asInstanceOf[NumberPicker]
-    tempoPicker.setMinValue(32)
-    tempoPicker.setMaxValue(mMaxTempo)
+    tempoPicker.setMinValue(MainActor.MIN_TEMPO)
+    tempoPicker.setMaxValue(MainActor.MAX_TEMPO) // used to be mMaxTempo
     tempoPicker.setValue(mStartTempo)
     tempoPicker.setWrapSelectorWheel(false)
     tempoPicker.setOnLongPressUpdateInterval(5)

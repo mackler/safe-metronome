@@ -1,7 +1,7 @@
 package org.mackler {
   package object metronome {
 
-    final val DEVELOPMENT_MODE = false
+    final val DEVELOPMENT_MODE = true
 
     /* Contents:
      *
@@ -54,6 +54,7 @@ package org.mackler {
     type LayoutInflater             = android.view.LayoutInflater
     type Menu                       = android.view.Menu
     type MenuItem                   = android.view.MenuItem
+    val  FLAG_KEEP_SCREEN_ON        = android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
     type View                       = android.view.View
     val  INVISIBLE                  = android.view.View.INVISIBLE
     val  VISIBLE                    = android.view.View.VISIBLE

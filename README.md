@@ -29,6 +29,13 @@ you now for the first time ever in an Android app, exclusively in
 Compare **Safe Metronome** to all the other free metronome apps for
 Android.  If you can find a better one, let us know.
 
+Building
+--------
+
+    sbt sign-release
+
+    adb install -r <path/to/apk/file>
+
 Credits
 -------
 - Clave recording by [BoilingSand](http://freesound.org/people/BoilingSand/)

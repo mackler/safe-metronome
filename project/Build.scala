@@ -6,9 +6,9 @@ import sbtandroid.AndroidKeys._
 object General {
   val settings = Defaults.defaultSettings ++ Seq (
     name := "SafeMetronome",
-    version := "0.1.1-1",
-    versionCode := 5,
-    scalaVersion := "2.10.2",
+    version := "0.1.1-2",
+    versionCode := 6,
+    scalaVersion := "2.10.3",
     platformName in Android := "android-15",
     scalacOptions in Compile ++= Seq("-deprecation","-feature","-language:implicitConversions","-unchecked"),
     javaOptions in Compile += "-Dscalac.patmat.analysisBudget=off",
@@ -32,8 +32,8 @@ object General {
     sbtandroid.AndroidMarketPublish.settings ++ Seq (
       keyalias in Android := "googleplay",
       libraryDependencies ++= Seq(
-        "com.typesafe.akka" % "akka-actor_2.10" % "2.2.0"
-//      ,"org.scalatest" %% "scalatest"     % "2.0.M6-SNAP21" % "test"
+        "com.typesafe.akka" % "akka-actor_2.10" % "2.2.2"
+//      ,"org.scalatest" %% "scalatest"     % "2.0" % "test"
       )
     )
 }
